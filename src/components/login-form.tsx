@@ -21,16 +21,20 @@ export function LoginForm({
             className="mx-auto mb-4 h-48 w-48"
           />
         <CardHeader>
-          <CardTitle>Entre na sua conta</CardTitle>
-          <CardDescription>
-            Conecte-se usando sua conta do Google
-          </CardDescription>
+            <CardTitle style={{ color: "#fff" }}>Entre na sua conta</CardTitle>
+            <CardDescription style={{ color: "#fff" }}>
+              Conecte-se usando sua conta do Google
+            </CardDescription>
         </CardHeader>
         <CardContent>
           <form>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">
-                <Button variant="outline" className="w-full">
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  style={{ backgroundColor: "#394779", color: "#fff", border: "none"}}
+                >
                   Entrar com Google
                 </Button>
               </div>
