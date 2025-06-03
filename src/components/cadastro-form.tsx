@@ -12,12 +12,14 @@ import {
 } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
+import { DatePickerWithInputIcon } from "@/components/ui/datePicker"
 
 export function CadastroForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const [idade, setIdade] = useState<string>("")
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [sexo, setSexo] = useState<string>("")
   const [resposta, setResposta] = useState<string | null>(null)
   const handleCheckboxChange = (valor: string) => {
@@ -26,13 +28,12 @@ export function CadastroForm({
   const [autoRegular, setAutoRegular] = useState("")
   const [generosGostos, setGenerosGostos] = useState("")
   const [generosNaoGostos, setGenerosNaoGostos] = useState("")
-  const idades = Array.from({ length: 91 }, (_, i) => i + 10)
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
     const dadosFormulario = {
-      idade,
+      data: selectedDate.toLocaleDateString("pt-BR"),
       sexo,
       moradorIFPE: resposta,
       autoRegular,
@@ -70,23 +71,12 @@ export function CadastroForm({
                   className="text-muted-foreground"
                   style={{ color: "#fff" }}
                 >
-                  Insira sua idade
+                  Insira sua data de nascimento
                 </Label>
-                <Select value={idade} onValueChange={setIdade}>
-                  <SelectTrigger 
-                    id="idade" 
-                    className="w-full bg-[#4A4A4A] text-white border-[#394779]"
-                  >
-                    <SelectValue  placeholder="Selecione sua idade" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#4A4A4A] text-white border-[#394779]">
-                    {idades.map((idade) => (
-                      <SelectItem key={idade} value={idade.toString()}>
-                        {idade} anos
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <DatePickerWithInputIcon
+                  value={selectedDate}
+                  onChange={setSelectedDate}
+                 />
               </div>
 
               {/* Seleção de Sexo */}
