@@ -5,6 +5,10 @@ import {
     Card, CardContent,
     CardHeader, CardTitle,
 } from "@/components/ui/card"
+import { 
+  Select, SelectTrigger, SelectValue, 
+  SelectContent, SelectItem 
+} from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
 import { DatePickerWithInputIcon } from "@/components/ui/datePicker"
 import { useState } from "react"
@@ -16,8 +20,9 @@ export function CheckOut({
 }: React.ComponentProps<"div">) {
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [turma, setTurma] = useState("")
-  const [som, setSom] = useState("")
+  const [musica, setmusica] = useState("")
+  const [turma, setTurma] = useState<string>("")
+  const turmas = Array.from({ length: 10 }, (_, i) => i + 1)
   const [codigoGerado, setCodigoGerado] = useState<string | null>(null);
 
 
@@ -27,7 +32,7 @@ export function CheckOut({
 
     const dadosFormulario = {
       turma,
-      som,
+      musica,
       data: selectedDate.toLocaleDateString("pt-BR")
     };
     console.log("Dados do formulário:", dadosFormulario);
@@ -68,26 +73,35 @@ export function CheckOut({
               >
                 Turma
               </Label>
-              <Input
-                    placeholder="Informe a turma"
-                    value={turma}
-                    onChange={(e) => setTurma(e.target.value)}
-                    className="bg-[#4A4A4A] placeholder:text-[#A0A0A0] text-white border border-[#394779]"
-                />
+              <Select value={turma} onValueChange={setTurma}>
+                  <SelectTrigger
+                    id="sexo"
+                    className="w-full bg-[#4A4A4A] text-white border-[#394779]"
+                  >
+                    <SelectValue placeholder="Selecione seu sexo" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#4A4A4A] text-white border-[#394779]">
+                  {turmas.map((turma) => (
+                      <SelectItem key={turma} value={turma.toString()}>
+                        {turma} Período
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
             </div>
 
             <div className="flex flex-col gap-2">
               <Label
-                htmlFor="som"
+                htmlFor="musica"
                 className="text-muted-foreground"
                 style={{ color: "#fff" }}
               >
-                Tipo de som usado na aula
+                Tipo de música usado na aula
               </Label>
               <Input
-                    placeholder="Informe o tipo de som"
-                    value={som}
-                    onChange={(e) => setSom(e.target.value)}
+                    placeholder="Informe o tipo de musica"
+                    value={musica}
+                    onChange={(e) => setmusica(e.target.value)}
                     className="bg-[#4A4A4A] placeholder:text-[#A0A0A0] text-white border border-[#394779]"
                 />
             </div>
