@@ -7,7 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
 
-interface DatePickerWithInputIconProps extends React.HTMLAttributes<HTMLDivElement> {
+interface DatePickerWithInputIconProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
   value?: Date;
   onChange?: (date: Date | undefined) => void;
 }
@@ -82,11 +82,11 @@ export function DatePickerWithInputIcon({
             value={inputValue}
             onChange={handleInputChange}
             maxLength={10}
-            className="pl-10 bg-[#394779] text-white border-none placeholder:text-muted-foreground"
+            className="pl-10 bg-[#4A4A4A] text-white border-none placeholder:text-muted-foreground"
           />
           <PopoverTrigger asChild>
             <CalendarIcon
-              className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-white cursor-pointer"
+              className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground cursor-pointer"
               strokeWidth={1.8}
             />
           </PopoverTrigger>

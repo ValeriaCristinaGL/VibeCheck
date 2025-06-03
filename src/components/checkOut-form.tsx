@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import {
     Card, CardContent,
     CardHeader, CardTitle,
@@ -7,6 +8,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { DatePickerWithInputIcon } from "@/components/ui/datePicker"
 import { useState } from "react"
+import {SuccessCard} from "@/components/ui/successCard"
 
 export function CheckOut({
   className,
@@ -14,16 +16,21 @@ export function CheckOut({
 }: React.ComponentProps<"div">) {
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [turma, setTurma] = useState("")
+  const [som, setSom] = useState("")
+  const [codigoGerado, setCodigoGerado] = useState<string | null>(null);
+
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (selectedDate) {
-      console.log("Data selecionada:", selectedDate.toLocaleDateString("pt-BR"),);
-      //alert(`Check-Out registrado para: ${selectedDate.toLocaleDateString("pt-BR")}`);
-      // Aqui você pode enviar para uma API, banco de dados, etc.
-    } else {
-      alert("Por favor, selecione uma data.");
-    }
+    setCodigoGerado("ABC123"); // Aqui pode ser um código gerado dinamicamente
+
+    const dadosFormulario = {
+      turma,
+      som,
+      data: selectedDate.toLocaleDateString("pt-BR")
+    };
+    console.log("Dados do formulário:", dadosFormulario);
   }
 
   return (
@@ -39,7 +46,7 @@ export function CheckOut({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
               <Label
                 htmlFor="date"
                 className="text-muted-foreground"
@@ -51,6 +58,38 @@ export function CheckOut({
                 value={selectedDate}
                 onChange={setSelectedDate}
               />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="turma"
+                className="text-muted-foreground"
+                style={{ color: "#fff" }}
+              >
+                Turma
+              </Label>
+              <Input
+                    placeholder="Informe a turma"
+                    value={turma}
+                    onChange={(e) => setTurma(e.target.value)}
+                    className="bg-[#4A4A4A] placeholder:text-[#A0A0A0] text-white border border-[#394779]"
+                />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <Label
+                htmlFor="som"
+                className="text-muted-foreground"
+                style={{ color: "#fff" }}
+              >
+                Tipo de som usado na aula
+              </Label>
+              <Input
+                    placeholder="Informe o tipo de som"
+                    value={som}
+                    onChange={(e) => setSom(e.target.value)}
+                    className="bg-[#4A4A4A] placeholder:text-[#A0A0A0] text-white border border-[#394779]"
+                />
             </div>
             <div className="flex flex-col gap-3 mt-6">
               <Button
@@ -65,6 +104,7 @@ export function CheckOut({
               >
                 Liberar Check-Out
               </Button>
+              {codigoGerado && <SuccessCard codigo={codigoGerado} />}
             </div>
           </form>
         </CardContent>
