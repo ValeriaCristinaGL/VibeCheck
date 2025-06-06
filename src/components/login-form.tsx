@@ -15,16 +15,16 @@ export function LoginForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
-          <img
-            src="../../public/vibe-check-logo.png"
-            alt="Logo"
-            className="mx-auto mb-4 h-48 w-48"
-          />
+        <img
+          src="../../public/vibe-check-logo.png"
+          alt="Logo"
+          className="mx-auto mb-4 h-48 w-48"
+        />
         <CardHeader>
-            <CardTitle style={{ color: "#fff" }}>Entre na sua conta</CardTitle>
-            <CardDescription style={{ color: "#fff" }}>
-              Conecte-se usando sua conta do Google
-            </CardDescription>
+          <CardTitle className="text-white">Entre na sua conta</CardTitle>
+          <CardDescription className="text-white">
+            Conecte-se usando sua conta do Google
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form>
@@ -32,8 +32,7 @@ export function LoginForm({
               <div className="flex flex-col gap-3">
                 <Button
                   variant="outline"
-                  className="w-full"
-                  style={{ backgroundColor: "#394779", color: "#fff", border: "none"}}
+                  className="w-full bg-[#394779] text-white border-none hover:bg-[#5c6bc0]"
                 >
                   Entrar com Google
                 </Button>

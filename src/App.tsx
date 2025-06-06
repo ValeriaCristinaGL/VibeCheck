@@ -1,6 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import Login from "./pages/Login.tsx";
+import AlunoCheckInPage from "./pages/Aluno-checkin";
+import ConfirmacaoPage from "./pages/Confirmacao.tsx";
+import CheckInPage from "./pages/CheckIn.tsx";
 
 function App() {
 
@@ -8,6 +11,9 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/aluno-checkin" element={<AlunoCheckInPage />} />
+        <Route path="/confirmacao" element={<ConfirmacaoPage />} />
+        <Route path="/checkIn" element={<CheckInPage/>} />
         {/* Adicione outras rotas aqui */}
         <Route
           path="*"
