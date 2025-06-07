@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
-import Login from "./pages/Cadastro.tsx";
+import Login from "./pages/CheckOut.tsx";
 function App() {
 
   return (

@@ -4,11 +4,8 @@ import { Input } from "@/components/ui/input"
 import {
     Card, CardContent,
     CardHeader, CardTitle,
-} from "@/components/ui/card"
-import { 
-  Select, SelectTrigger, SelectValue, 
-  SelectContent, SelectItem 
-} from "@/components/ui/select"
+} from "@/components/ui/card" 
+import { ComboboxDemo } from "@/components/ui/comboBox"
 import { Label } from "@/components/ui/label"
 import { DatePickerWithInputIcon } from "@/components/ui/datePicker"
 import { useState } from "react"
@@ -21,8 +18,8 @@ export function CheckOut({
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [musica, setmusica] = useState("")
-  const [turma, setTurma] = useState<string>("")
-  const turmas = Array.from({ length: 10 }, (_, i) => i + 1)
+  /*const [turma, setTurma] = useState<string>("")
+  const turmas = Array.from({ length: 10 }, (_, i) => i + 1)*/
   const [codigoGerado, setCodigoGerado] = useState<string | null>(null);
 
 
@@ -31,7 +28,6 @@ export function CheckOut({
     setCodigoGerado("ABC123"); // Aqui pode ser um código gerado dinamicamente
 
     const dadosFormulario = {
-      turma,
       musica,
       data: selectedDate.toLocaleDateString("pt-BR")
     };
@@ -73,21 +69,7 @@ export function CheckOut({
               >
                 Turma
               </Label>
-              <Select value={turma} onValueChange={setTurma}>
-                  <SelectTrigger
-                    id="sexo"
-                    className="w-full bg-[#4A4A4A] text-white border-[#394779]"
-                  >
-                    <SelectValue placeholder="Selecione seu sexo" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#4A4A4A] text-white border-[#394779]">
-                  {turmas.map((turma) => (
-                      <SelectItem key={turma} value={turma.toString()}>
-                        {turma} Período
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <ComboboxDemo/>
             </div>
 
             <div className="flex flex-col gap-2">
