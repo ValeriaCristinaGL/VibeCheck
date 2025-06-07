@@ -18,8 +18,6 @@ export function CheckOut({
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [musica, setmusica] = useState("")
-  /*const [turma, setTurma] = useState<string>("")
-  const turmas = Array.from({ length: 10 }, (_, i) => i + 1)*/
   const [codigoGerado, setCodigoGerado] = useState<string | null>(null);
 
 

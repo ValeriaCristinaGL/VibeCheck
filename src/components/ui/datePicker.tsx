@@ -82,7 +82,7 @@ export function DatePickerWithInputIcon({
             value={inputValue}
             onChange={handleInputChange}
             maxLength={10}
-            className="pl-10 bg-[#4A4A4A] text-white border-none placeholder:text-muted-foreground"
+            className="pl-10 bg-[#4A4A4A] text-white border border-[#394779] placeholder:text-muted-foreground"
           />
           <PopoverTrigger asChild>
             <CalendarIcon

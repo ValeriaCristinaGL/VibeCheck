@@ -48,7 +48,7 @@ export function ComboboxDemo() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="bg-[#4A4A4A] text-[#fff] w-full justify-between"
+          className="border-[#394779] bg-[#4A4A4A] hover:bg-[#394779] hover:text-[#fff] text-[#fff] w-full justify-between"
         >
           {value ? selectedLabel : "Selecione a turma"}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -57,7 +57,7 @@ export function ComboboxDemo() {
       <PopoverContent className="w-[200px] p-0">
         <Command>
           <CommandInput
-            placeholder="Search or type..."
+            placeholder="Procurar..."
             className="h-9"
             value={inputValue}
             onValueChange={setInputValue}
