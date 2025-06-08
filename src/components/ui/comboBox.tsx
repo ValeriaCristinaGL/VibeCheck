@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -27,14 +26,19 @@ const turmas = [
   { value: "astro", label: "Astro" },
 ]
 
-export function ComboboxDemo() {
+export function ComboboxDemo({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (value: string) => void
+}) {
   const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState("")
   const [inputValue, setInputValue] = React.useState("")
 
   const handleSelect = (selectedValue: string) => {
-    setValue(selectedValue)
-    setInputValue("") // limpa input
+    onChange(selectedValue) // aqui avisamos o pai
+    setInputValue("")
     setOpen(false)
   }
 
@@ -68,33 +72,41 @@ export function ComboboxDemo() {
             }}
           />
           <CommandList>
-            <CommandEmpty>
-              <Button
-                variant="ghost"
-                className="w-full justify-start px-2 py-1"
-                onClick={() => handleSelect(inputValue)}
-              >
-                Criar: <span className="ml-1 font-semibold">{inputValue}</span>
-              </Button>
-            </CommandEmpty>
-            <CommandGroup>
-              {turmas.map((framework) => (
-                <CommandItem
-                  key={framework.value}
-                  value={framework.value}
-                  onSelect={() => handleSelect(framework.value)}
+            {turmas.filter(t => t.label.toLowerCase().includes(inputValue.toLowerCase())).length === 0 && inputValue && (
+              <div className="p-2">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start px-2 py-1"
+                  onClick={() => handleSelect(inputValue)}
                 >
-                  {framework.label}
-                  <Check
-                    className={cn(
-                      "ml-auto h-4 w-4",
-                      value === framework.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              ))}
+                  Criar: <span className="ml-1 font-semibold">{inputValue}</span>
+                </Button>
+              </div>
+            )}
+
+            <CommandGroup>
+              {turmas
+                .filter((framework) =>
+                  framework.label.toLowerCase().includes(inputValue.toLowerCase())
+                )
+                .map((framework) => (
+                  <CommandItem
+                    key={framework.value}
+                    value={framework.value}
+                    onSelect={() => handleSelect(framework.value)}
+                  >
+                    {framework.label}
+                    <Check
+                      className={cn(
+                        "ml-auto h-4 w-4",
+                        value === framework.value ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </CommandItem>
+                ))}
             </CommandGroup>
           </CommandList>
+
         </Command>
       </PopoverContent>
     </Popover>
