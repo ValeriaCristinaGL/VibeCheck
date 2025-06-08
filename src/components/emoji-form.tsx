@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -15,6 +16,8 @@ export function EmojiForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+
+  const navigate = useNavigate()
 
   const [selected, setSelected] = useState<string | null>(null)
 
@@ -34,6 +37,7 @@ export function EmojiForm({
     event.preventDefault()
     if (selected) {
       console.log("Emoji enviado:", selected)
+      navigate("/comfirmacao") // Redireciona para a página de checkout
       // Aqui você pode tratar o envio (ex: API, estado global, etc)
     }
   }
@@ -54,7 +58,7 @@ export function EmojiForm({
             <Popover>
               <PopoverTrigger asChild>
                 <button aria-label="Informações sobre emojis">
-                  <Info className="w-5 h-5 text-[#fff]" />
+                  <Info className="w-5 h-5 text-[#fff] cursor-pointer" />
                 </button>
               </PopoverTrigger>
               <PopoverContent className="bg-[#fff] text-[#000] border-[#394779] w-72">
@@ -89,7 +93,7 @@ export function EmojiForm({
               <Button
                 type="submit"
                 variant="outline"
-                className="w-full"
+                className="w-full cursor-pointer"
                 style={{
                   backgroundColor: "#394779",
                   color: "#fff",

@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -12,14 +13,13 @@ import {
 } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
-import { DatePickerWithInputIcon } from "@/components/ui/datePicker"
 
 export function CadastroForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [resetKey, setResetKey] = useState(0);
+  const navigate = useNavigate()
+  const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined)
   const [sexo, setSexo] = useState<string>("")
   const [resposta, setResposta] = useState<string | null>(null)
   const [autoRegular, setAutoRegular] = useState("")
@@ -47,7 +47,7 @@ export function CadastroForm({
 
     if (!selectedDate) {
       newErrors.selectedDate = "Por favor, selecione uma data do encontro."
-    } else if (selectedDate > new Date()) {
+    } else if (new Date(selectedDate) > new Date()) {
       newErrors.selectedDate = "A data não pode ser no futuro."
     }
 
@@ -78,7 +78,7 @@ export function CadastroForm({
     }
 
     const dadosFormulario = {
-      data: selectedDate.toLocaleDateString("pt-BR"),
+      data: selectedDate,
       sexo,
       moradorIFPE: resposta,
       autoRegular,
@@ -90,13 +90,13 @@ export function CadastroForm({
 
     // Limpar o formulário após o envio
     setSelectedDate(undefined)
-    setResetKey(prev => prev + 1) // força reset
     setSexo("")
     setResposta(null)
     setAutoRegular("")
     setGenerosGostos("")
     setGenerosNaoGostos("")
     setErrors({})
+    navigate("/aluno_check_in"); // Redireciona para a página de check-in
   }
 
   return (
@@ -118,7 +118,7 @@ export function CadastroForm({
             <div className="flex flex-col gap-6">
 
               {/* Data de nascimento */}
-              <div className="grid gap-2">
+              <div className="grid gap-2 ">
                 <Label 
                   htmlFor="idade" 
                   className="text-muted-foreground"
@@ -126,14 +126,18 @@ export function CadastroForm({
                 >
                   Insira sua data de nascimento
                 </Label>
-                <DatePickerWithInputIcon
-                  key={resetKey}
-                  value={selectedDate}
-                  onChange={(date) => {
-                  setSelectedDate(date)
-                  clearError("selectedDate")
-                }}
+                <Input
+                  type="date"
+                  value={selectedDate ?? ""}
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value)
+                    clearError("selectedDate")
+                  }}
+                  className={cn(
+                    "block w-full bg-[#4A4A4A] text-white border border-[#394779] placeholder:text-[#A0A0A0] appearance-none cursor-pointer focus:border-[#5c6bc0] outline-none",
+                  )}
                 />
+
                 {errors.selectedDate && (
                   <p className="text-sm text-red-500 mt-1">{errors.selectedDate}</p>
                 )}
@@ -152,16 +156,17 @@ export function CadastroForm({
                   onValueChange={(value) => {
                   setSexo(value)
                   clearError("sexo")
+                  className="focus:border-[#5c6bc0] outline-none"
                 }}
                 >
                   <SelectTrigger
                     id="sexo"
                     className={cn(
-                      "w-full bg-[#4A4A4A] text-white border-[#394779]",
+                      "w-full bg-[#4A4A4A] text-white border-[#394779] cursor-pointer",
                       errors.sexo && "border-red-500"
                     )}
                   >
-                    <SelectValue placeholder="Selecione seu sexo" />
+                  <SelectValue placeholder="Selecione seu sexo" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#4A4A4A] text-white border-[#394779]">
                     <SelectItem value="masculino">Masculino</SelectItem>
@@ -287,7 +292,7 @@ export function CadastroForm({
             </div>
             <Button
               type="submit"
-              className="w-full bg-[#394779] text-white hover:bg-[#3d4381]"
+              className="w-full bg-[#394779] text-white hover:bg-[#3d4381] cursor-pointer focus:border-[#5c6bc0] outline-none"
             >
               Cadastrar
             </Button>

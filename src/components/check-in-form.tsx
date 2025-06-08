@@ -10,13 +10,12 @@ import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { SuccessCard } from "@/components/ui/successCard"
 
-export function CheckOut({
+export function CheckIn({
   className,
   ...props
 }: React.ComponentProps<"div">) {
 
   const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined)
-  const [musica, setMusica] = useState("")
   const [codigoGerado, setCodigoGerado] = useState<string | null>(null);
   const [turma, setTurma] = useState("");
 
@@ -50,10 +49,6 @@ export function CheckOut({
       newErrors.turma = "Por favor, selecione ou crie uma turma."
     }
 
-    if (!musica.trim()) {
-      newErrors.musica = "Por favor, informe o tipo de música usado na aula."
-    }
-
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length > 0) {
@@ -65,7 +60,6 @@ export function CheckOut({
     setCodigoGerado(codigo)
 
     const dadosFormulario = {
-      musica,
       turma,
       data: selectedDate,
       codigo,
@@ -75,7 +69,6 @@ export function CheckOut({
 
     // Limpar formulário após envio
     setSelectedDate(undefined)
-    setMusica("")
     setTurma("")
     setErrors({})
   }
@@ -89,7 +82,7 @@ export function CheckOut({
           className="mx-auto mb-4 h-48 w-48"
         />
         <CardHeader>
-          <CardTitle className="text-white">Check-Out</CardTitle>
+          <CardTitle className="text-white">Check-In</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -139,32 +132,6 @@ export function CheckOut({
               )}
             </div>
 
-            <div className="flex flex-col gap-2">
-              <Label
-                htmlFor="musica"
-                className="text-muted-foreground"
-                style={{ color: "#fff" }}
-              >
-                Tipo de música usado na aula
-              </Label>
-              <Input
-                id="musica"
-                placeholder="Informe o tipo de musica"
-                value={musica}
-                onChange={(e) => {
-                  setMusica(e.target.value)
-                  clearError("musica")
-                }}
-                className={cn(
-                  "bg-[#4A4A4A] placeholder:text-[#A0A0A0] text-white border border-[#394779]",
-                  errors.musica && "border-red-500"
-                )}
-              />
-              {errors.musica && (
-                <p className="text-sm text-red-500 mt-1">{errors.musica}</p>
-              )}
-            </div>
-
             <div className="flex flex-col gap-3 mt-6">
               <Button
                 type="submit"
@@ -176,7 +143,7 @@ export function CheckOut({
                   border: "none"
                 }}
               >
-                Liberar Check-Out
+                Liberar Check-In
               </Button>
               {codigoGerado && <SuccessCard codigo={codigoGerado} />}
             </div>
