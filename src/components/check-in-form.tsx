@@ -128,7 +128,7 @@ export function CheckIn({
                 }}
               />
               {errors.turma && (
-                <p className="text-sm text-red-500 mt-1">{errors.turma}</p>
+                <p className="cursor-pointer text-sm text-red-500 mt-1">{errors.turma}</p>
               )}
             </div>
 

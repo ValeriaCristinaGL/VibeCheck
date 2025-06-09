@@ -8,6 +8,7 @@ import Emoji from "./pages/Emoji.tsx";
 import CheckIn from "./pages/CheckIn.tsx";
 import AlunoCheckIn from "./pages/Aluno-checkin.tsx";
 import Comfirmacao from "./pages/Confirmacao.tsx";
+import Relatorio from "./pages/Relatorio.tsx";
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
         <Route path="/emoji" element={<Emoji />} />
         <Route path="/aluno_check_in" element={<AlunoCheckIn />} />
         <Route path="/comfirmacao" element={<Comfirmacao />} />
+        <Route path="/relatorio" element={<Relatorio />} />
   
         <Route
           path="*"
