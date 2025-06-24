@@ -21,10 +21,10 @@ export function LoginForm({
           className="mx-auto mb-4 h-48 w-48"
         />
         <CardHeader>
-          <CardTitle className="text-white">Entre na sua conta</CardTitle>
-          <CardDescription className="text-white">
-            Conecte-se usando sua conta do Google
-          </CardDescription>
+          <CardTitle className="text-white">Entre na sua conta</CardTitle>          
+            <CardDescription className="text-white">
+              Conecte-se usando sua conta do Google
+            </CardDescription>
         </CardHeader>
         <CardContent>
           <form>
@@ -33,6 +33,8 @@ export function LoginForm({
                 <Button
                   variant="outline"
                   className="w-full bg-[#394779] text-white border-none hover:bg-[#5c6bc0]"
+                  type="button"
+                  onClick={() => window.location.href = "http://localhost:8080/login"}
                 >
                   Entrar com Google
                 </Button>
