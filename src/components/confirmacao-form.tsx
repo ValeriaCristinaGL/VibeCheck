@@ -17,7 +17,7 @@ export function ConfirmacaoForm({
     // Função para lidar com o submit
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    navigate("/aluno_check_in"); // Redireciona para a página de check-in
+    navigate("/check"); // Redireciona para a página de check-in
   }
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>

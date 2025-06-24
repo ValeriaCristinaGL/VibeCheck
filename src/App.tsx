@@ -9,6 +9,7 @@ import CheckIn from "./pages/CheckIn.tsx";
 import AlunoCheckIn from "./pages/Aluno-checkin.tsx";
 import Comfirmacao from "./pages/Confirmacao.tsx";
 import Relatorio from "./pages/Relatorio.tsx";
+import DashboardPage from "./pages/Dashboard.tsx";
 
 function App() {
 
@@ -20,9 +21,10 @@ function App() {
         <Route path="/checkout" element={<CheckOut />} />
         <Route path="/checkin" element={<CheckIn />} />
         <Route path="/emoji" element={<Emoji />} />
-        <Route path="/aluno_check_in" element={<AlunoCheckIn />} />
+        <Route path="/check" element={<AlunoCheckIn />} />
         <Route path="/comfirmacao" element={<Comfirmacao />} />
         <Route path="/relatorio" element={<Relatorio />} />
+        <Route path="/Dashboard" element={<DashboardPage/>} />
   
         <Route
           path="*"
