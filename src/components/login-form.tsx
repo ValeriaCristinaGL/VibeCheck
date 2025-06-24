@@ -40,10 +40,11 @@ export function LoginForm({
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">
                 <Button
-                  type="submit"
-                  className="w-full cursor-pointer bg-[#394779] text-white border-none hover:bg-[#3d4381] flex items-center justify-center gap-2"
+                  variant="outline"
+                  className="w-full bg-[#394779] text-white border-none hover:bg-[#5c6bc0]"
+                  type="button"
+                  onClick={() => window.location.href = "http://localhost:8080/login"}
                 >
-                  <img src="/google-icon.png" alt="Google" className="w-5 h-5" />
                   Entrar com Google
                 </Button>
               </div>
