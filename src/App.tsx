@@ -10,22 +10,77 @@ import AlunoCheckIn from "./pages/Aluno-checkin.tsx";
 import Comfirmacao from "./pages/Confirmacao.tsx";
 import Relatorio from "./pages/Relatorio.tsx";
 import DashboardPage from "./pages/Dashboard.tsx";
+import { ProtectedRoute } from "./pages/ProtectedRoute";
 
 function App() {
-
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/cadastro" element={<Cadastro />} />
-        <Route path="/checkout" element={<CheckOut />} />
-        <Route path="/checkin" element={<CheckIn />} />
-        <Route path="/emoji" element={<Emoji />} />
-        <Route path="/check" element={<AlunoCheckIn />} />
-        <Route path="/comfirmacao" element={<Comfirmacao />} />
-        <Route path="/relatorio" element={<Relatorio />} />
-        <Route path="/Dashboard" element={<DashboardPage/>} />
-  
+        <Route
+          path="/cadastro"
+          element={
+            <ProtectedRoute requiredRole="ROLE_ALUNO">
+              <Cadastro />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute requiredRole="ROLE_PROFESSOR">
+              <CheckOut />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/checkin"
+          element={
+            <ProtectedRoute requiredRole="ROLE_PROFESSOR">
+              <CheckIn />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/emoji"
+          element={
+            <ProtectedRoute requiredRole="ROLE_ALUNO">
+              <Emoji />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/check"
+          element={
+            <ProtectedRoute requiredRole="ROLE_ALUNO">
+              <AlunoCheckIn />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/comfirmacao"
+          element={
+            <ProtectedRoute requiredRole="ROLE_ALUNO">
+              <Comfirmacao />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/relatorio"
+          element={
+            <ProtectedRoute requiredRole="ROLE_PROFESSOR">
+              <Relatorio />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/Dashboard"
+          element={
+            <ProtectedRoute requiredRole="ROLE_PROFESSOR">
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="*"
           element={

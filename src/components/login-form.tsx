@@ -13,13 +13,6 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const navigate = useNavigate()
-
-  // Função para lidar com o submit
-  function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
-    navigate("/cadastro"); // Redireciona para a página de check-in
-  }
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -36,7 +29,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+          <form>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-3">
                 <Button

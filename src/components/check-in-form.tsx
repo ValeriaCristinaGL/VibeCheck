@@ -34,43 +34,54 @@ export function CheckIn({
   }
 
   // Validações ao submeter
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
     const newErrors: { [key: string]: string } = {}
 
     if (!selectedDate) {
-      newErrors.selectedDate = "Por favor, selecione uma data do encontro."
+      newErrors.selectedDate = "Por favor, selecione uma data do encontro.";
     } else if (new Date(selectedDate) > new Date()) {
-      newErrors.selectedDate = "A data não pode ser no futuro."
+      newErrors.selectedDate = "A data não pode ser no futuro.";
     }
 
     if (!turma.trim()) {
-      newErrors.turma = "Por favor, selecione ou crie uma turma."
+      newErrors.turma = "Por favor, selecione ou crie uma turma.";
     }
 
-    setErrors(newErrors)
+    setErrors(newErrors);
 
-    if (Object.keys(newErrors).length > 0) {
-      return // Não submete se tem erro
+    if (Object.keys(newErrors).length > 0) return;
+
+    try {
+      const response = await fetch("http://localhost:8080/api/codigo/liberar-checkin", {
+        method: "POST",
+        credentials: "include", // importante para manter a sessão
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao gerar código de check-in");
+      }
+
+      const data = await response.json();
+      const codigo = data.codigo;
+      setCodigoGerado(codigo);
+
+      const dadosFormulario = {
+        turma,
+        data: selectedDate,
+        codigo,
+      };
+
+      console.log("Check-in registrado:", dadosFormulario);
+
+      // Limpar form
+      setSelectedDate(undefined);
+      setTurma("");
+      setErrors({});
+    } catch (error) {
+      console.error("Erro ao gerar código de check-in:", error);
     }
-
-    // Se passou na validação
-    const codigo = "ABC123"
-    setCodigoGerado(codigo)
-
-    const dadosFormulario = {
-      turma,
-      data: selectedDate,
-      codigo,
-    }
-
-    console.log("Dados do formulário:", dadosFormulario)
-
-    // Limpar formulário após envio
-    setSelectedDate(undefined)
-    setTurma("")
-    setErrors({})
   }
 
   return (
