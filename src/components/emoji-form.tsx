@@ -1,25 +1,25 @@
-import { useNavigate } from "react-router-dom"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Card, CardContent, CardHeader,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { Info } from "lucide-react"
-import { useState } from "react"
+} from "@/components/ui/popover";
+import { Info } from "lucide-react";
+import { useState } from "react";
+import Cookies from "js-cookie";
 
 export function EmojiForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
 
-  const navigate = useNavigate()
-
-  const [selected, setSelected] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const [selected, setSelected] = useState<string | null>(null);
 
   const emojis = [
     { id: "1", label: "Muito Feliz", src: "/1.svg" },
@@ -31,14 +31,37 @@ export function EmojiForm({
     { id: "7", label: "Irritado", src: "/7.svg" },
     { id: "8", label: "Ansioso", src: "/8.svg" },
     { id: "9", label: "Apaixonado", src: "/9.svg" },
-  ]
+  ];
 
-  function handleSubmit(event: React.FormEvent) {
-    event.preventDefault()
-    if (selected) {
-      console.log("Emoji enviado:", selected)
-      navigate("/comfirmacao") // Redireciona para a página de checkout
-      // Aqui você pode tratar o envio (ex: API, estado global, etc)
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+
+    if (!selected) return;
+
+    const codigo = Cookies.get("codigo_avaliacao");
+
+    if (!codigo) {
+      alert("Código de avaliação não encontrado. Por favor, volte e insira novamente.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8080/api/registro/registrar?codigo=${codigo}&emocao=${parseInt(selected)}`, {
+        method: "POST",
+        credentials: "include", // mantém sessão do aluno se necessário
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao registrar emoção");
+      }
+
+      // Sucesso, limpa o cookie e redireciona
+      Cookies.remove("codigo_avaliacao");
+      navigate("/comfirmacao");
+
+    } catch (error) {
+      console.error("Erro ao enviar emoção:", error);
+      alert("Erro ao registrar emoção. Tente novamente.");
     }
   }
 
@@ -84,7 +107,9 @@ export function EmojiForm({
                     hover:brightness-110 transition`}
                 >
                   <img src={emoji.src} alt={emoji.label} className="w-12 h-12" />
-                  <span className="font-bold text-xs text-[#fff] text-center break-words whitespace-normal max-w-[90px]">{emoji.label}</span>
+                  <span className="font-bold text-xs text-[#fff] text-center break-words whitespace-normal max-w-[90px]">
+                    {emoji.label}
+                  </span>
                 </button>
               ))}
             </div>
@@ -108,5 +133,5 @@ export function EmojiForm({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

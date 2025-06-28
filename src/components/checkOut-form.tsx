@@ -1,83 +1,82 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
-  Card, CardContent,
-  CardHeader, CardTitle,
-} from "@/components/ui/card"
-import { ComboboxDemo } from "@/components/ui/comboBox"
-import { Label } from "@/components/ui/label"
-import { useState } from "react"
-import { SuccessCard } from "@/components/ui/successCard"
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ComboboxDemo } from "@/components/ui/comboBox";
+import { Label } from "@/components/ui/label";
+import { useState, useEffect } from "react";
+import { SuccessCard } from "@/components/ui/successCard";
 
-export function CheckOut({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
-
-  const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined)
-  const [musica, setMusica] = useState("")
+export function CheckOut({ className, ...props }: React.ComponentProps<"div">) {
   const [codigoGerado, setCodigoGerado] = useState<string | null>(null);
   const [turma, setTurma] = useState("");
+  const [turmas, setTurmas] = useState<string[]>([]);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // Estado para erros
-  const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  // Buscar turmas do backend
+  useEffect(() => {
+    fetch("http://localhost:8080/api/codigo/turmas", {
+      credentials: "include",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Erro ao carregar turmas");
+        return res.json();
+      })
+      .then((data: string[]) => setTurmas(data))
+      .catch((err) => {
+        console.error(err);
+        setErrors((e) => ({ ...e, turma: "Erro ao carregar turmas" }));
+      });
+  }, []);
 
-  // Função para limpar o erro de um campo específico ao digitar/alterar valor
   const clearError = (field: string) => {
     if (errors[field]) {
-      setErrors(prevErrors => {
-        const newErrors = { ...prevErrors }
-        delete newErrors[field]
-        return newErrors
-      })
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
-  }
+  };
 
-  // Validações ao submeter
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
-    const newErrors: { [key: string]: string } = {}
-
-    if (!selectedDate) {
-      newErrors.selectedDate = "Por favor, selecione uma data do encontro."
-    } else if (new Date(selectedDate) > new Date()) {
-      newErrors.selectedDate = "A data não pode ser no futuro."
-    }
-
+    const newErrors: { [key: string]: string } = {};
     if (!turma.trim()) {
-      newErrors.turma = "Por favor, selecione ou crie uma turma."
+      newErrors.turma = "Por favor, selecione ou crie uma turma.";
     }
 
-    if (!musica.trim()) {
-      newErrors.musica = "Por favor, informe o tipo de música usado na aula."
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
+    try {
+      const response = await fetch("http://localhost:8080/api/codigo/liberar-checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          nomeTurma: turma,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Erro ao gerar código de check-out");
+
+      const data = await response.json();
+      setCodigoGerado(data.codigo);
+
+      setTurma("");
+      setErrors({});
+    } catch (error) {
+      console.error("Erro ao gerar código de check-out:", error);
+      setErrors({ geral: "Falha ao liberar check-out. Tente novamente." });
     }
-
-    setErrors(newErrors)
-
-    if (Object.keys(newErrors).length > 0) {
-      return // Não submete se tem erro
-    }
-
-    // Se passou na validação
-    const codigo = "ABC123"
-    setCodigoGerado(codigo)
-
-    const dadosFormulario = {
-      musica,
-      turma,
-      data: selectedDate,
-      codigo,
-    }
-
-    console.log("Dados do formulário:", dadosFormulario)
-
-    // Limpar formulário após envio
-    setSelectedDate(undefined)
-    setMusica("")
-    setTurma("")
-    setErrors({})
   }
 
   return (
@@ -93,77 +92,26 @@ export function CheckOut({
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-
             <div className="flex flex-col gap-2">
-              <Label
-                htmlFor="date"
-                className="text-muted-foreground"
-                style={{ color: "#fff" }}
-              >
-                Data do Encontro
-              </Label>
-              <Input
-                type="date"
-                value={selectedDate ?? ""}
-                onChange={(e) => {
-                  setSelectedDate(e.target.value)
-                  clearError("selectedDate")
-                }}
-                className={cn(
-                  "block w-full bg-[#4A4A4A] text-white border border-[#394779] placeholder:text-[#A0A0A0]",
-                )}
-              />
-              {errors.selectedDate && (
-                <p className="text-sm text-red-500 mt-1">{errors.selectedDate}</p>
-              )}
-
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <Label
-                htmlFor="turma"
-                className="text-muted-foreground"
-                style={{ color: "#fff" }}
-              >
+              <Label htmlFor="turma" className="text-muted-foreground" style={{ color: "#fff" }}>
                 Turma
               </Label>
               <ComboboxDemo
                 value={turma}
                 onChange={(value) => {
-                  setTurma(value)
-                  clearError("turma")
+                  setTurma(value);
+                  clearError("turma");
                 }}
+                items={turmas.map((t) => ({ value: t, label: t }))}
               />
               {errors.turma && (
                 <p className="text-sm text-red-500 mt-1">{errors.turma}</p>
               )}
             </div>
 
-            <div className="flex flex-col gap-2">
-              <Label
-                htmlFor="musica"
-                className="text-muted-foreground"
-                style={{ color: "#fff" }}
-              >
-                Tipo de música usado na aula
-              </Label>
-              <Input
-                id="musica"
-                placeholder="Informe o tipo de musica"
-                value={musica}
-                onChange={(e) => {
-                  setMusica(e.target.value)
-                  clearError("musica")
-                }}
-                className={cn(
-                  "bg-[#4A4A4A] placeholder:text-[#A0A0A0] text-white border border-[#394779]",
-                  errors.musica && "border-red-500"
-                )}
-              />
-              {errors.musica && (
-                <p className="text-sm text-red-500 mt-1">{errors.musica}</p>
-              )}
-            </div>
+            {errors.geral && (
+              <p className="text-sm text-red-500 mt-2">{errors.geral}</p>
+            )}
 
             <div className="flex flex-col gap-3 mt-6">
               <Button
@@ -173,7 +121,7 @@ export function CheckOut({
                 style={{
                   backgroundColor: "#394779",
                   color: "#fff",
-                  border: "none"
+                  border: "none",
                 }}
               >
                 Liberar Check-Out
@@ -184,5 +132,5 @@ export function CheckOut({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

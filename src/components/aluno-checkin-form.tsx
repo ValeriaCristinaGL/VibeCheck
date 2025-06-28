@@ -3,8 +3,9 @@ import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import Cookies from "js-cookie"
 import {
-  Card, CardContent, CardDescription, 
+  Card, CardContent, CardDescription,
   CardHeader, CardTitle,
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -19,7 +20,7 @@ export function AlunoCheckIn({
   // Estado para erros
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
-    // Função para limpar o erro de um campo específico ao digitar/alterar valor
+  // Função para limpar o erro de um campo específico ao digitar/alterar valor
   const clearError = (field: string) => {
     if (errors[field]) {
       setErrors(prevErrors => {
@@ -30,32 +31,45 @@ export function AlunoCheckIn({
     }
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-    const newErrors: { [key: string]: string } = {}
+    const newErrors: { [key: string]: string } = {};
 
     if (!codigo.trim()) {
-      newErrors.codigo = "Por favor, informe um código válido."
+      newErrors.codigo = "Por favor, informe um código válido.";
     }
 
-    setErrors(newErrors)
+    setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      return
+      return;
     }
 
-    const dadosFormulario = {
-      codigo
+    try {
+      const response = await fetch(`http://localhost:8080/api/registro/verificar-codigo?codigo=${codigo}`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao verificar o código");
+      }
+
+      const valido = await response.json();
+
+      if (valido) {
+        Cookies.set("codigo_avaliacao", codigo, { expires: 0.02 }); // ~30 minutos
+        navigate("/emoji");
+      } else {
+        setErrors({ codigo: "Código inválido ou expirado." });
+      }
+
+    } catch (error) {
+      console.error("Erro ao verificar código:", error);
+      setErrors({ codigo: "Erro ao verificar o código. Tente novamente." });
     }
-
-    console.log("Código:", dadosFormulario)
-
-    // Limpar o formulário após o envio
-    setcodigo("")
-    setErrors({})
-    navigate("/emoji") // Redireciona para a página de emoji
-  }
+  };
 
   return (
     <div className={cn("flex flex-col gap-6 ", className)} {...props}>

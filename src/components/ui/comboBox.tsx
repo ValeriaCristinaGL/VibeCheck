@@ -18,20 +18,14 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 
-const turmas = [
-  { value: "next.js", label: "Next.js" },
-  { value: "sveltekit", label: "SvelteKit" },
-  { value: "nuxt.js", label: "Nuxt.js" },
-  { value: "remix", label: "Remix" },
-  { value: "astro", label: "Astro" },
-]
-
 export function ComboboxDemo({
   value,
   onChange,
+  items,
 }: {
   value: string
   onChange: (value: string) => void
+  items: { value: string, label: string }[]
 }) {
   const [open, setOpen] = React.useState(false)
   const [inputValue, setInputValue] = React.useState("")
@@ -43,7 +37,7 @@ export function ComboboxDemo({
   }
 
   const selectedLabel =
-    turmas.find((f) => f.value === value)?.label || value
+    items.find((f) => f.value === value)?.label || value
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -72,7 +66,7 @@ export function ComboboxDemo({
             }}
           />
           <CommandList>
-            {turmas.filter(t => t.label.toLowerCase().includes(inputValue.toLowerCase())).length === 0 && inputValue && (
+            {items.filter(t => t.label.toLowerCase().includes(inputValue.toLowerCase())).length === 0 && inputValue && (
               <div className="p-2">
                 <Button
                   variant="ghost"
@@ -85,7 +79,7 @@ export function ComboboxDemo({
             )}
 
             <CommandGroup>
-              {turmas
+              {items
                 .filter((framework) =>
                   framework.label.toLowerCase().includes(inputValue.toLowerCase())
                 )
