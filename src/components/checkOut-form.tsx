@@ -43,6 +43,24 @@ export function CheckOut({ className, ...props }: React.ComponentProps<"div">) {
     }
   };
 
+  // Função para logout
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        window.location.href = "/";
+      } else {
+        console.error("Erro ao fazer logout");
+      }
+    } catch (err) {
+      console.error("Erro durante logout:", err);
+    }
+  };
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
@@ -80,7 +98,16 @@ export function CheckOut({ className, ...props }: React.ComponentProps<"div">) {
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("relative flex flex-col gap-6", className)} {...props}>
+      {/* Botão logout fixado no canto superior direito */}
+      <Button
+        variant="destructive"
+        onClick={handleLogout}
+        className="absolute top-4 right-4 cursor-pointer bg-[#394779] text-white hover:bg-[#3d4381]"
+      >
+        Encerrar Sessão
+      </Button>
+
       <Card className="border-none">
         <img
           src="/vibe-check-logo.png"

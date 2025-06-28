@@ -1,4 +1,4 @@
-import { DashboardForm } from "@/components/ui/Dashboard-form";
+import { DashboardForm } from "@/components/Dashboard-form";
 
 export default function DashboardPage() {
   return (
