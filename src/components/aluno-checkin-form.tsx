@@ -16,11 +16,8 @@ export function AlunoCheckIn({
 }: React.ComponentProps<"div">) {
   const navigate = useNavigate()
   const [codigo, setcodigo] = useState("")
-
-  // Estado para erros
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
-  // Função para limpar o erro de um campo específico ao digitar/alterar valor
   const clearError = (field: string) => {
     if (errors[field]) {
       setErrors(prevErrors => {
@@ -30,6 +27,23 @@ export function AlunoCheckIn({
       })
     }
   }
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        navigate("/");
+      } else {
+        console.error("Erro ao fazer logout");
+      }
+    } catch (err) {
+      console.error("Erro durante logout:", err);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -72,7 +86,16 @@ export function AlunoCheckIn({
   };
 
   return (
-    <div className={cn("flex flex-col gap-6 ", className)} {...props}>
+    <div className={cn("relative flex flex-col gap-6 ", className)} {...props}>
+      {/* Botão logout posicionado absoluto no topo direito */}
+      <Button
+        variant="destructive"
+        onClick={handleLogout}
+        className="absolute top-4 right-4 cursor-pointer bg-[#394779] text-white hover:bg-[#3d4381]"
+      >
+        Encerrar Sessão
+      </Button>
+
       <Card className="border-none">
         <img
           src="/vibe-check-logo.png"
@@ -88,9 +111,6 @@ export function AlunoCheckIn({
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div className="flex flex-col gap-6">
-
-
-              {/* Preferências musicais */}
               <div className="grid gap-2">
                 <Label
                   className="text-muted-foreground"
@@ -114,7 +134,6 @@ export function AlunoCheckIn({
                 {errors.codigo && (
                   <p className="text-sm text-red-500 mt-1">{errors.codigo}</p>
                 )}
-
               </div>
             </div>
             <Button

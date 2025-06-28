@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -34,7 +33,7 @@ export function LoginForm({
               <div className="flex flex-col gap-3">
                 <Button
                   variant="outline"
-                  className="w-full bg-[#394779] text-white border-none hover:bg-[#5c6bc0]"
+                  className="w-full bg-[#394779] text-white hover:bg-[#3d4381] hover:text-white border-none cursor-pointer"
                   type="button"
                   onClick={() => window.location.href = "http://localhost:8080/login"}
                 >

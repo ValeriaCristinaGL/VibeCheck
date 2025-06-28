@@ -8,6 +8,8 @@ import {
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { SuccessCard } from "@/components/ui/successCard"
+import{ useEffect } from "react"
+import { ComboboxDemo } from "@/components/ui/combobox"
 
 export function CheckIn({
   className,
@@ -24,13 +26,44 @@ export function CheckIn({
   // Função para limpar o erro de um campo específico ao digitar/alterar valor
   const clearError = (field: string) => {
     if (errors[field]) {
-      setErrors(prevErrors => {
-        const newErrors = { ...prevErrors }
-        delete newErrors[field]
-        return newErrors
-      })
+
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
-  }
+  };
+
+  // Função para logout
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        // Redireciona para a página inicial após logout
+        window.location.href = "/";
+      } else {
+        console.error("Erro ao fazer logout");
+      }
+    } catch (err) {
+      console.error("Erro durante logout:", err);
+    }
+  };
+
+// Buscar turmas do backend
+useEffect(() => {
+  fetch("http://localhost:8080/api/codigo/turmas", {
+    credentials: "include",
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Erro ao carregar turmas");
+      return res.json();
+    });
+}, []);
 
   // Validações ao submeter
   async function handleSubmit(event: React.FormEvent) {
@@ -84,7 +117,16 @@ export function CheckIn({
   }
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("relative flex flex-col gap-6", className)} {...props}>
+      {/* Botão logout fixado no canto superior direito */}
+      <Button
+        variant="destructive"
+        onClick={handleLogout}
+        className="absolute top-4 right-4 cursor-pointer bg-[#394779] text-white hover:bg-[#3d4381]"
+      >
+        Encerrar Sessão
+      </Button>
+
       <Card className="border-none">
         <img
           src="/vibe-check-logo.png"
@@ -133,9 +175,13 @@ export function CheckIn({
               <ComboboxDemo
                 value={turma}
                 onChange={(value) => {
-                  setTurma(value)
-                  clearError("turma")
+                  setTurma(value);
+                  clearError("turma");
                 }}
+                items={[
+                  { value: "1", label: "Turma 1" },
+                  { value: "2", label: "Turma 2" },
+                ]}
               />
               {errors.turma && (
                 <p className="cursor-pointer text-sm text-red-500 mt-1">{errors.turma}</p>
