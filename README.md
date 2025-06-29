@@ -27,7 +27,7 @@ Aplicação web para gerenciamento de check-in/check-out, relatórios e controle
 
 1. Clone o repositório:
    ```bash
-   git clone https://github.com/seu-usuario/vibecheck.git
+   git clone https://github.com/ValeriaCristinaGL/VibeCheck.git
    cd vibecheck
    ```
 
