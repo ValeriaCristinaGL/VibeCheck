@@ -89,7 +89,7 @@ export function DashboardForm() {
 
   const navigate = useNavigate();
   const { toast } = useToast();
-
+  
   // Carrega as turmas da API, chamado uma vez no carregamento do componente
   const loadTurmas = useCallback(async () => {
     try {
@@ -306,6 +306,44 @@ export function DashboardForm() {
       </div>
     );
   }
+
+  // Função para exportar dados para arquivo .txt
+  const exportDataToTxt = () => {
+  if (!data || data.length === 0) {
+    toast({
+      title: "Atenção",
+      description: "Não há dados para exportar.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  let text = "";
+
+  data.forEach((item) => {
+    text += `${item.week}:\n`;
+    Object.entries(item).forEach(([key, value]) => {
+      if (key !== "week") {
+        text += `  ${key}: ${value}\n`;
+      }
+    });
+    text += "\n";
+  });
+
+  const blob = new Blob([text], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "dados_grafico.txt";
+  document.body.appendChild(link);
+  link.click();
+
+  // Limpa o link após o download
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
 
   // Renderiza o dashboard principal com filtros, gráfico e navegação
   return (
@@ -549,6 +587,11 @@ export function DashboardForm() {
                 </Button>
               </div>
             )}
+          </div>
+          <div className="mt-4 flex justify-center">
+              <Button onClick={exportDataToTxt} className="bg-[#394779] text-white hover:bg-[#3d4381] cursor-pointer">
+                Exportar dados (.txt)
+              </Button>
           </div>
         </CardContent>
       </Card>

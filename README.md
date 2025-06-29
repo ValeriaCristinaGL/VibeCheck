@@ -1,54 +1,99 @@
-# React + TypeScript + Vite
+# VibeCheck
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicação web para gerenciamento de check-in/check-out, relatórios e controle de usuários com autenticação e autorização por roles.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tecnologias Utilizadas
 
-## Expanding the ESLint configuration
+- React 18 com TypeScript  
+- React Router Dom para roteamento e rotas protegidas  
+- Tailwind CSS para estilização  
+- Radix UI para componentes acessíveis  
+- Axios para requisições HTTP (via cliente `http` personalizado)  
+- Lucide Icons, clsx, tailwind-merge, entre outros
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Requisitos
+
+- Node.js (versão 16+ recomendada)  
+- npm ou yarn  
+- Backend rodando e acessível (endpoint `/user/details` para autenticação)  
+
+---
+
+## Instalação
+
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/seu-usuario/vibecheck.git
+   cd vibecheck
+   ```
+
+2. Instale as dependências:
+   ```bash
+   npm install
+   # ou
+   yarn install
+   ```
+
+3. Configure o backend para estar rodando e acessível, com suporte a CORS para o frontend.
+
+4. Ajuste, se necessário, o arquivo `src/api/http.ts` para apontar para a URL correta do backend.
+
+---
+
+## Execução
+
+### Rodar em modo desenvolvimento
+
+```bash
+npm run dev
+# ou
+yarn dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+O servidor estará disponível geralmente em `http://localhost:3000` com hot reload.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## Estrutura do Projeto
+
+- `/src/components` — Componentes React reutilizáveis (formulários, botões, layouts)  
+- `/src/hooks` — Hooks personalizados, como autenticação  
+- `/src/pages` — Páginas da aplicação mapeadas pelas rotas  
+- `/src/api` — Configuração e instância do cliente HTTP (Axios)  
+- `/src/styles` — Arquivos CSS e configurações do Tailwind  
+- `/src/App.tsx` — Componente principal com as rotas e proteções  
+- `/src/main.tsx` — Ponto de entrada da aplicação  
+
+---
+
+## Funcionalidades Principais
+
+- Tela de Login  
+- Registro de usuários (cadastro)  
+- Check-in e Check-out para professores e alunos  
+- Dashboard protegido para professores  
+- Formulário de Emoções para alunos  
+- Relatórios para professores  
+- Rotas protegidas por nível de permissão (`ROLE_ALUNO`, `ROLE_PROFESSOR`)
+
+---
+
+## Autenticação e Proteção de Rotas
+
+- Hook `useAuth` para carregar usuário logado e seu papel (role)  
+- Componente `ProtectedRoute` para restringir acesso por role  
+- Redirecionamento para login caso usuário não autenticado ou sem permissão
+
+---
+
+## Estilização
+
+- Tailwind CSS com variáveis CSS customizadas para tema claro e escuro  
+- Animações usando `tw-animate-css`  
+- Componentes estilizados usando Radix UI e ícones da Lucide Icons  
+
+---
