@@ -169,6 +169,29 @@ export function DashboardForm() {
       });
 
       const transformedData: DashboardData = Object.values(grouped);
+
+      // Ordena as datas do gráfico do mais antigo para o mais recente
+      const sortKey = (label: string) => {
+        // Para semana: "Semana 27"
+        if (label.startsWith("Semana")) {
+          const n = Number(label.replace("Semana", "").trim());
+          return isNaN(n) ? 0 : n;
+        }
+        // Para mês: "MM/YYYY"
+        if (label.match(/^\d{2}\/\d{4}$/)) {
+          const [mes, ano] = label.split("/").map(Number);
+          return ano * 100 + mes;
+        }
+        // Para dia: "DD/MM"
+        if (label.match(/^\d{2}\/\d{2}$/)) {
+          const [dia, mes] = label.split("/").map(Number);
+          return mes * 100 + dia;
+        }
+        return 0;
+      };
+
+      transformedData.sort((a, b) => sortKey(a.week as string) - sortKey(b.week as string));
+
       setData(transformedData);
     } catch (err) {
       console.error("Erro ao carregar dados:", err);
