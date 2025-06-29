@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { ComboboxDemo } from "@/components/ui/comboBox"
 import { Label } from "@/components/ui/label"
 import { SuccessCard } from "@/components/ui/successCard"
 import { useNavigate } from "react-router-dom"
@@ -312,107 +311,114 @@ export function CheckIn({ className, ...props }: React.ComponentProps<"div">) {
 
         <CardContent>
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <div className="relative flex gap-2 items-center">
             <div className="flex flex-col gap-2">
               <Label htmlFor="turma" className="text-muted-foreground" style={{ color: "#fff" }}>
                 Turma
               </Label>
-
-              {/* Combobox para digitar/selecionar/criar turma */}
-              <div
-                onClick={() => setIsListOpen(true)}
-                onFocus={() => setIsListOpen(true)}
-              >
-                <ComboboxDemo
-                  id="turma"
-                  value={turma}
-                  onChange={(value) => {
-                    setTurma(value)
-                    clearError("turma")
-                    setCodigoGerado(null)
-                  }}
-                  items={turmas.map((t) => t.nome)} // passa nomes das turmas para sugestão
-                  disabled={editIndex !== null}
-                />
-              </div>
-
-              {/* Lista customizada com botões, aparece só se isListOpen === true */}
-              {isListOpen && (
-                <div className="bg-[#4A4A4A] rounded-md p-2 max-h-48 overflow-y-auto mt-1">
-                  {turmasFiltradas.length === 0 && (
-                    <p className="text-white">Nenhuma turma encontrada.</p>
-                  )}
-
-                  {turmasFiltradas.map((t, i) => (
-                    <div
-                      key={t.id}
-                      className={cn(
-                        "flex items-center justify-between p-1 rounded cursor-pointer",
-                        turma === t.nome ? "bg-[#3d4381]" : "hover:bg-[#2a2f57]"
-                      )}
-                      onClick={() => {
-                        if (editIndex === null) {
-                          setTurma(t.nome)
-                          setIsListOpen(false) // fecha lista ao selecionar
-                        }
-                      }}
-                    >
-                      {editIndex === i ? (
-                        <>
-                          <input
-                            type="text"
-                            className="rounded px-2 py-1 text-black flex-grow"
-                            value={editValue}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            autoFocus
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                          <Button size="sm" variant="outline" onClick={confirmarEdicao} className="ml-2">
-                            Salvar
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={cancelarEdicao} className="ml-1">
-                            Cancelar
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-white flex-grow truncate">{t.nome}</span>
-                          <div className="flex gap-1 ml-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                iniciarEdicao(i)
-                              }}
-                              aria-label={`Editar turma ${t.nome}`}
-                              title="Editar"
-                            >
-                              <PencilIcon className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                abrirModalExcluir(i)
-                              }}
-                              aria-label={`Apagar turma ${t.nome}`}
-                              title="Apagar"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-
+              <input
+                id="turma"
+                type="text"
+                className="w-full px-3 py-1 mt-1 rounded bg-[#4A4A4A] outline-none text-white"
+                placeholder="Digite uma turma"
+                value={turma}
+                onChange={(e) => {
+                  setTurma(e.target.value)
+                  clearError("turma")
+                  setCodigoGerado(null)
+                  setIsListOpen(false)
+                }}
+                disabled={editIndex !== null}
+              />
               {errors.turma && (
-                <p className="cursor-pointer text-sm text-red-500 mt-1">{errors.turma}</p>
+                <p className="text-sm text-red-500 mt-1">{errors.turma}</p>
               )}
             </div>
+
+            {/* Botão para abrir a lista */}
+            <Button
+              type="button"
+              className="mt-6 bg-[#394779] border-none outline-none cursor-pointer text-white hover:bg-[#3d4381] hover:text-white h-10"
+              onClick={() => setIsListOpen(!isListOpen)}
+              variant="outline"
+            >
+              Ver Lista
+            </Button>
+          </div>
+
+          {/* Lista de turmas com botões de editar/remover */}
+          {isListOpen && (
+            <div className="bg-[#4A4A4A] rounded-md p-2 max-h-48 overflow-y-auto mt-2">
+              {turmasFiltradas.length === 0 && (
+                <p className="text-white">Nenhuma turma encontrada.</p>
+              )}
+
+              {turmasFiltradas.map((t, i) => (
+                <div
+                  key={t.id}
+                  className={cn(
+                    "flex items-center justify-between p-1 rounded cursor-pointer",
+                    turma === t.nome ? "bg-[#3d4381]" : "hover:bg-[#2a2f57]"
+                  )}
+                  onClick={() => {
+                    if (editIndex === null) {
+                      setTurma(t.nome)
+                      setIsListOpen(false)
+                    }
+                  }}
+                >
+                  {editIndex === i ? (
+                    <>
+                      <input
+                        type="text"
+                        className="rounded px-2 py-1 text-black flex-grow"
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        autoFocus
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <Button size="sm" variant="outline" onClick={confirmarEdicao} className="ml-2">
+                        Salvar
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={cancelarEdicao} className="ml-1">
+                        Cancelar
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-white flex-grow truncate">{t.nome}</span>
+                      <div className="flex gap-1 ml-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            iniciarEdicao(i)
+                          }}
+                          title="Editar"
+                        >
+                          <PencilIcon className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            abrirModalExcluir(i)
+                          }}
+                          title="Remover"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+
 
             {errors.geral && <p className="text-sm text-red-500 mt-2">{errors.geral}</p>}
 
