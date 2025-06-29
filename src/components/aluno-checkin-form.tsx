@@ -87,15 +87,26 @@ export function AlunoCheckIn({
 
   return (
     <div className={cn("relative flex flex-col gap-6 ", className)} {...props}>
-      {/* Botão logout posicionado absoluto no topo direito */}
+      {/* Seta para voltar para a tela de login */}
       <Button
-        variant="destructive"
-        onClick={handleLogout}
-        className="absolute top-4 right-4 cursor-pointer bg-[#394779] text-white hover:bg-[#3d4381]"
+        variant="ghost"
+        size="icon"
+        className="text-white cursor-pointer hover:bg-transparent absolute top-1 left-4 z-10"
+        aria-label="Voltar para login"
+        onClick={() => navigate("/")}
       >
-        Encerrar Sessão
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={3.5}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
       </Button>
-
+      {/* Botão logout fixado no topo direito */}
       <Card className="border-none">
         <img
           src="/vibe-check-logo.png"

@@ -21,13 +21,23 @@ export function ConfirmacaoForm({
   }
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="text-center border-none">
+      <Card className="text-center border-none relative">
+        {/* Botão logout alinhado à direita, 2rem acima da logo */}
+        <Button
+          variant="destructive"
+          onClick={() => (window.location.href = "/")}
+          className="absolute right-2 top-0 md:top-4 cursor-pointer bg-[#394779] text-white hover:bg-[#3d4381]"
+        >
+          Encerrar Sessão
+        </Button>
         {/* Logo do app */}
-        <img
-          src="/vibe-check-logo.png"
-          alt="Logo Vibe Check"
-          className="mx-auto mt-8 h-40 w-40"
-        />
+        <div className="w-fit mx-auto">
+          <img
+            src="/vibe-check-logo.png"
+            alt="Logo Vibe Check"
+            className="mx-auto mt-8 h-40 w-40"
+          />
+        </div>
 
         {/* Mensagem de confirmação */}
         <CardHeader>

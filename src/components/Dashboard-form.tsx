@@ -23,7 +23,8 @@ import {
 } from "recharts";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast"; 
+
 import {
   Select,
   SelectContent,
@@ -164,7 +165,7 @@ export function DashboardForm() {
         if (!emotionLabel) return;
 
         if (!grouped[timeLabel]) grouped[timeLabel] = { week: timeLabel };
-        grouped[timeLabel][emotionLabel] = (grouped[timeLabel][emotionLabel] || 0) + 1;
+        grouped[timeLabel][emotionLabel] = Number(grouped[timeLabel][emotionLabel] || 0) + 1;
       });
 
       const transformedData: DashboardData = Object.values(grouped);
@@ -258,6 +259,25 @@ export function DashboardForm() {
       <Card className="border-none shadow-none">
         <CardHeader className="pb-2 flex flex-row justify-between items-start">
           <div className="flex items-center gap-4">
+            {/* Seta para voltar para a tela de login */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-white cursor-pointer hover:bg-transparent"
+              aria-label="Voltar para login"
+              onClick={() => navigate("/")}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </Button>
             <CardTitle className="text-lg text-white">Relatórios</CardTitle>
             <Button
               variant="ghost"

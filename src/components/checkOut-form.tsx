@@ -10,12 +10,14 @@ import { ComboboxDemo } from "@/components/ui/comboBox";
 import { Label } from "@/components/ui/label";
 import { useState, useEffect } from "react";
 import { SuccessCard } from "@/components/ui/successCard";
+import { useNavigate } from "react-router-dom"; // adicionado
 
 export function CheckOut({ className, ...props }: React.ComponentProps<"div">) {
   const [codigoGerado, setCodigoGerado] = useState<string | null>(null);
   const [turma, setTurma] = useState("");
   const [turmas, setTurmas] = useState<string[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const navigate = useNavigate(); // adicionado
 
   // Buscar turmas do backend
   useEffect(() => {
@@ -99,11 +101,31 @@ export function CheckOut({ className, ...props }: React.ComponentProps<"div">) {
 
   return (
     <div className={cn("relative flex flex-col gap-6", className)} {...props}>
+      {/* Seta para voltar para o dashboard */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="text-white cursor-pointer hover:bg-transparent absolute top-1 left-4 z-10"
+        aria-label="Voltar para dashboard"
+        onClick={() => navigate("/dashboard")}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-8 w-8"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={3.5}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </Button>
+
       {/* Botão logout fixado no canto superior direito */}
       <Button
         variant="destructive"
         onClick={handleLogout}
-        className="absolute top-4 right-4 cursor-pointer bg-[#394779] text-white hover:bg-[#3d4381]"
+        className="absolute top-1 right-2 cursor-pointer bg-[#394779] text-white hover:bg-[#3d4381]"
       >
         Encerrar Sessão
       </Button>
