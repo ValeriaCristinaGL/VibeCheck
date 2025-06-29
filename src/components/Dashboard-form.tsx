@@ -169,7 +169,7 @@ export function DashboardForm() {
       });
 
       const transformedData: DashboardData = Object.values(grouped);
-
+      console.table(transformedData);
       // Ordena as datas do gráfico do mais antigo para o mais recente
       const sortKey = (label: string) => {
         // Para semana: "Semana 27"
@@ -216,8 +216,13 @@ export function DashboardForm() {
   }, [loadData]);
 
   const filteredData = data || [];
-  const availableEmotions =
-    filteredData.length > 0 ? Object.keys(filteredData[0]).filter((k) => k !== "week") : [];
+  const availableEmotions = Array.from(
+    new Set(
+      filteredData.flatMap((item) =>
+        Object.keys(item).filter((k) => k !== "week")
+      )
+    )
+  );
 
   const getEmotionColor = (emotion: string) => {
     return DEFAULT_EMOTION_COLORS[emotion] || "#999999";
