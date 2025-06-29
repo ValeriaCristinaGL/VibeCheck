@@ -57,12 +57,12 @@ export function CheckIn({ className, ...props }: React.ComponentProps<"div">) {
         if (!res.ok) throw new Error("Erro ao carregar turmas");
         return res.json();
       })
-      .then((data: string[]) => setTurmas(data))
+      .then((data: string[]) => setTurmas(data.sort((a, b) => a.localeCompare(b))))
       .catch((err) => {
         console.error(err);
         setErrors((e) => ({ ...e, turma: "Erro ao carregar turmas" }));
       });
-  }, []);
+  }, [turma]);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -129,7 +129,7 @@ export function CheckIn({ className, ...props }: React.ComponentProps<"div">) {
       {/* Botão logout fixado no canto superior direito */}
       <Button
         variant="destructive"
-        onClick={() => (window.location.href = "/")}
+        onClick={() => (handleLogout())}
         className="absolute top-1 right-2 cursor-pointer bg-[#394779] text-white hover:bg-[#3d4381]"
       >
         Encerrar Sessão

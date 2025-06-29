@@ -204,7 +204,7 @@ export function DashboardForm() {
     } finally {
       setLoading(false);
     }
-  }, [selectedTurma, selectedTipo, timeRange, toast]);
+  }, [selectedTurma, selectedTipo, timeRange]);
 
   // Carrega turmas e dados ao montar
   useEffect(() => {
