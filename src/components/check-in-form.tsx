@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { SuccessCard } from "@/components/ui/successCard"
 import{ useEffect } from "react"
-import { ComboboxDemo } from "@/components/ui/combobox"
+import { ComboboxDemo } from "@/components/ui/comboBox"
 
 export function CheckIn({
   className,
