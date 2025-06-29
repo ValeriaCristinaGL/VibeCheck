@@ -181,7 +181,7 @@ export function CheckIn({ className, ...props }: React.ComponentProps<"div">) {
       const turmaAntiga = turmasFiltradas[editIndex!]
 
       const response = await fetch(
-        `http://localhost:8080/api/turmas/${parseInt(turmaAntiga.id)}`,
+        `http://localhost:8080/api/turmas/${turmaAntiga.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -225,7 +225,7 @@ export function CheckIn({ className, ...props }: React.ComponentProps<"div">) {
       console.log("Apagando turma:", turmaParaApagar.id);
 
       const response = await fetch(
-        `http://localhost:8080/api/turmas/${parseInt(turmaParaApagar.id)}`,
+        `http://localhost:8080/api/turmas/${turmaParaApagar.id}`,
         {
           method: "DELETE",
           credentials: "include",
@@ -255,7 +255,7 @@ export function CheckIn({ className, ...props }: React.ComponentProps<"div">) {
 
   useEffect(() => {
     loadTurmas()
-  }, [turmas, loadTurmas])
+  }, [loadTurmas])
 
   // Filtra turmas com base no texto digitado (case insensitive)
   const turmasFiltradas = turmas.filter((t) =>
