@@ -13,13 +13,18 @@ import { Info } from "lucide-react";
 import { useState } from "react";
 import Cookies from "js-cookie";
 
+// Componente principal EmojiForm
 export function EmojiForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  // Hook do React Router para navegação programática
   const navigate = useNavigate();
+
+  // Estado para armazenar qual emoji está selecionado (id do emoji)
   const [selected, setSelected] = useState<string | null>(null);
 
+  // Array contendo os emojis disponíveis, com id, texto e caminho da imagem
   const emojis = [
     { id: "1", label: "Muito Feliz", src: "/1.svg" },
     { id: "2", label: "Feliz", src: "/2.svg" },
@@ -32,40 +37,54 @@ export function EmojiForm({
     { id: "9", label: "Apaixonado", src: "/9.svg" },
   ];
 
+  // Função para enviar o emoji selecionado para o backend
   async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+    event.preventDefault(); // Evita recarregar a página no submit
 
-    if (!selected) return;
+    if (!selected) return; // Se nenhum emoji selecionado, não faz nada
 
+    // Pega o código da avaliação do cookie armazenado no navegador
     const codigo = Cookies.get("codigo_avaliacao");
 
+    // Se o cookie não existir, alerta o usuário para voltar e inserir código
     if (!codigo) {
       alert("Código de avaliação não encontrado. Por favor, volte e insira novamente.");
       return;
     }
 
     try {
-      const response = await fetch(`http://localhost:8080/api/registro/registrar?codigo=${codigo}&emocao=${parseInt(selected)}`, {
-        method: "POST",
-        credentials: "include",
-      });
+      // Envia requisição POST para registrar a emoção
+      const response = await fetch(
+        `http://localhost:8080/api/registro/registrar?codigo=${codigo}&emocao=${parseInt(selected)}`,
+        {
+          method: "POST",
+          credentials: "include", // Envia cookies junto com a requisição
+        }
+      );
 
+      // Se o servidor retornar erro, lança exceção para tratar no catch
       if (!response.ok) {
         throw new Error("Erro ao registrar emoção");
       }
 
+      // Remove o cookie de código após registro bem-sucedido
       Cookies.remove("codigo_avaliacao");
+
+      // Redireciona o usuário para página de confirmação
       navigate("/comfirmacao");
     } catch (error) {
+      // Loga erro no console e avisa usuário com alert
       console.error("Erro ao enviar emoção:", error);
       alert("Erro ao registrar emoção. Tente novamente.");
     }
   }
 
   return (
+    // Container principal com classes de estilo e props adicionais
     <div className={cn("relative flex flex-col gap-6", className)} {...props}>
-      {/* Top bar: seta e logout alinhados como na dashboard */}
+      {/* Barra superior contendo botão voltar e botão logout */}
       <div className="flex flex-row justify-between items-center w-full">
+        {/* Botão para voltar à tela inicial/login */}
         <Button
           variant="ghost"
           size="icon"
@@ -73,6 +92,7 @@ export function EmojiForm({
           aria-label="Voltar para login"
           onClick={() => navigate("/")}
         >
+          {/* Ícone SVG da seta para voltar */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-8 w-8"
@@ -84,6 +104,8 @@ export function EmojiForm({
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </Button>
+
+        {/* Botão para encerrar sessão, leva para raiz ("/") */}
         <Button
           variant="destructive"
           onClick={() => (window.location.href = "/")}
@@ -92,7 +114,10 @@ export function EmojiForm({
           Encerrar Sessão
         </Button>
       </div>
+
+      {/* Card principal contendo logo, título, explicação e emojis */}
       <Card className="border-none">
+        {/* Logo centralizado */}
         <img
           src="/vibe-check-logo.png"
           alt="Logo"
@@ -100,9 +125,12 @@ export function EmojiForm({
         />
         <CardHeader>
           <div className="flex items-center gap-4 mb-4">
+            {/* Texto explicativo para o usuário */}
             <span className="text-white">
               Qual emoji representa suas emoções agora?
             </span>
+
+            {/* Popover que mostra explicação ao clicar no ícone de informação */}
             <Popover>
               <PopoverTrigger asChild>
                 <button aria-label="Informações sobre emojis">
@@ -119,25 +147,32 @@ export function EmojiForm({
             </Popover>
           </div>
         </CardHeader>
+
         <CardContent>
+          {/* Formulário com seleção de emoji e botão enviar */}
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            {/* Grade 3x3 para exibir todos os emojis */}
             <div className="grid grid-cols-3 gap-4">
               {emojis.map((emoji) => (
                 <button
                   key={emoji.id}
-                  type="button"
-                  onClick={() => setSelected(emoji.id)}
+                  type="button" // Botões não submetem o formulário ao clicar
+                  onClick={() => setSelected(emoji.id)} // Seleciona o emoji clicado
                   className={`flex flex-col items-center justify-center gap-1 p-2 rounded-xl border 
                     ${selected === emoji.id ? "bg-[#394779] border-[#394779]" : "bg-[#4A4A4A] border-[#394779]"}
-                    hover:brightness-110 transition`}
+                    hover:brightness-110 transition`} // Estilo diferente para emoji selecionado
                 >
+                  {/* Imagem do emoji */}
                   <img src={emoji.src} alt={emoji.label} className="w-12 h-12" />
+                  {/* Label/texto do emoji */}
                   <span className="font-bold text-xs text-[#fff] text-center break-words whitespace-normal max-w-[90px]">
                     {emoji.label}
                   </span>
                 </button>
               ))}
             </div>
+
+            {/* Botão enviar desabilitado se nenhum emoji selecionado */}
             <div className="flex flex-col gap-3 mt-6">
               <Button
                 type="submit"
@@ -148,7 +183,7 @@ export function EmojiForm({
                   color: "#fff",
                   border: "none"
                 }}
-                disabled={!selected}
+                disabled={!selected} // Desabilita se selected for null
               >
                 Enviar
               </Button>

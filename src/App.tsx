@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 
+// Importação das páginas
 import Login from "./pages/Login.tsx";
 import Cadastro from "./pages/Cadastro.tsx";
 import CheckOut from "./pages/CheckOut.tsx";
@@ -10,13 +11,19 @@ import AlunoCheckIn from "./pages/Aluno-checkin.tsx";
 import Comfirmacao from "./pages/Confirmacao.tsx";
 import Relatorio from "./pages/Relatorio.tsx";
 import DashboardPage from "./pages/Dashboard.tsx";
+
 import { ProtectedRoute } from "./pages/ProtectedRoute";
 
 function App() {
   return (
+    // Componente Router para navegação entre rotas
     <Router>
+      {/* Define as rotas da aplicação */}
       <Routes>
+        {/* Rota pública para a página de login */}
         <Route path="/" element={<Login />} />
+
+        {/* Rotas protegidas que exigem autenticação */}
         <Route
           path="/cadastro"
           element={
@@ -25,6 +32,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/checkout"
           element={
@@ -33,6 +41,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/checkin"
           element={
@@ -41,6 +50,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/emoji"
           element={
@@ -49,6 +59,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/check"
           element={
@@ -57,6 +68,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/comfirmacao"
           element={
@@ -65,6 +77,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/relatorio"
           element={
@@ -73,6 +86,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/Dashboard"
           element={
@@ -81,6 +95,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Rota para tratar páginas não encontradas */}
         <Route
           path="*"
           element={

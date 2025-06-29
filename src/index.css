@@ -1,13 +1,20 @@
+/* Importa o TailwindCSS e animações adicionais */
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Define um variante customizado para tema escuro */
+/* Aplica o estilo quando a classe 'dark' estiver em algum ancestral */
 @custom-variant dark (&:is(.dark *));
 
+/* Define variáveis customizadas de tema inline para serem usadas no CSS */
 @theme inline {
+  /* Variáveis para bordas arredondadas baseadas na variável principal --radius */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Variáveis para cores principais do tema, mapeando para outras variáveis */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -26,11 +33,15 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  /* Variáveis para cores de gráficos */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  /* Variáveis para a sidebar e seus elementos */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -41,10 +52,12 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Variáveis padrão para o tema claro */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --radius: 0.625rem; /* Raio padrão das bordas */
+  /* Cores principais definidas no espaço OKLCH (moderno, perceptualmente uniforme) */
+  --background: oklch(1 0 0); /* fundo claro */
+  --foreground: oklch(0.145 0 0); /* texto escuro */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
@@ -61,11 +74,14 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
+  /* Cores usadas em gráficos - podem ser usadas em componentes visuais */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
+
+  /* Variáveis para sidebar */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -76,9 +92,10 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* Variáveis para o tema escuro, ativadas ao adicionar a classe .dark */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
+  --background: oklch(0.145 0 0); /* fundo escuro */
+  --foreground: oklch(0.985 0 0); /* texto claro */
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
@@ -92,14 +109,17 @@
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
+  --border: oklch(1 0 0 / 10%); /* mais transparente para bordas no escuro */
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+  /* Cores dos gráficos para tema escuro */
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
+
+  /* Sidebar escura */
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -110,16 +130,20 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Camada base do Tailwind para aplicar estilos globais */
 @layer base {
+  /* Aplica borda padrão e outline com ring suave para todos elementos */
   * {
     @apply border-border outline-ring/50;
   }
+  /* Aplica fundo e cor de texto para o body usando as variáveis do tema */
   body {
     @apply bg-background text-foreground;
-    background-color: #323232;
+    background-color: #323232; /* fallback fixo para fundo (pode ser removido se usar variável) */
   }
 }
 
+/* Define as cores para gráficos novamente, separadamente em outra camada */
 @layer base {
   :root {
     --chart-1: oklch(0.646 0.222 41.116);

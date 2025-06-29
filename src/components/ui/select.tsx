@@ -4,24 +4,28 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
+// Componente raiz que controla o estado do select
 function Select({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Root>) {
   return <SelectPrimitive.Root data-slot="select" {...props} />
 }
 
+// Agrupador de opções dentro do select, para organizar itens em grupos
 function SelectGroup({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Group>) {
   return <SelectPrimitive.Group data-slot="select-group" {...props} />
 }
 
+// Exibe o valor selecionado no select
 function SelectValue({
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Value>) {
   return <SelectPrimitive.Value data-slot="select-value" {...props} />
 }
 
+// Gatilho que exibe o botão do select, pode ter tamanho "sm" ou "default"
 function SelectTrigger({
   className,
   size = "default",
@@ -41,6 +45,7 @@ function SelectTrigger({
       {...props}
     >
       {children}
+      {/* Ícone da seta para baixo no botão */}
       <SelectPrimitive.Icon asChild>
         <ChevronDownIcon className="size-4 opacity-50" />
       </SelectPrimitive.Icon>
@@ -48,10 +53,11 @@ function SelectTrigger({
   )
 }
 
+// Conteúdo da lista que aparece quando o select é aberto
 function SelectContent({
   className,
   children,
-  position = "popper",
+  position = "popper", // modo de posicionamento do dropdown
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
   return (
@@ -83,6 +89,7 @@ function SelectContent({
   )
 }
 
+// Rótulo de grupo dentro do select para identificar grupos de opções
 function SelectLabel({
   className,
   ...props
@@ -96,6 +103,7 @@ function SelectLabel({
   )
 }
 
+// Item da lista de opções do select
 function SelectItem({
   className,
   children,
@@ -110,16 +118,19 @@ function SelectItem({
       )}
       {...props}
     >
+      {/* Indicador de seleção (check) que aparece à direita */}
       <span className="absolute right-2 flex size-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
           <CheckIcon className="size-4" />
         </SelectPrimitive.ItemIndicator>
       </span>
+      {/* Texto do item */}
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   )
 }
 
+// Separador visual entre grupos ou itens
 function SelectSeparator({
   className,
   ...props
@@ -133,6 +144,7 @@ function SelectSeparator({
   )
 }
 
+// Botão para rolar para cima a lista quando estiver longa
 function SelectScrollUpButton({
   className,
   ...props
@@ -151,6 +163,7 @@ function SelectScrollUpButton({
   )
 }
 
+// Botão para rolar para baixo a lista quando estiver longa
 function SelectScrollDownButton({
   className,
   ...props
