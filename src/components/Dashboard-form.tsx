@@ -85,7 +85,9 @@ export function DashboardForm() {
   const [error, setError] = useState<string | null>(null);
   const [selectedTurma, setSelectedTurma] = useState<string | "all">("all");
   const [selectedTipo, setSelectedTipo] = useState<string | "all">("all");
-  const [turmas, setTurmas] = useState<string[]>([]);
+  type Turma = { id: number; nome: string };
+  const [turmas, setTurmas] = useState<Turma[]>([]);
+
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -98,13 +100,23 @@ export function DashboardForm() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
       });
+
       if (!response.ok) throw new Error("Erro ao buscar turmas");
-      const data = await response.json();
-      setTurmas(data);
+
+      const turmasApi: Turma[] = await response.json();
+
+      // Filtra turmas inválidas (id 0 ou nome "string")
+      const turmasValidas = turmasApi.filter(
+        (t) => t.id !== 0 && t.nome.toLowerCase() !== "string"
+      );
+
+      console.log("Turmas carregadas:", turmasValidas);
+      setTurmas(turmasValidas);
     } catch (err) {
       console.error("Erro ao carregar turmas:", err);
     }
   }, []);
+
 
   // Função para fazer logout e redirecionar para a página inicial
   const handleLogout = async () => {
@@ -138,9 +150,14 @@ export function DashboardForm() {
       if (!response.ok) throw new Error("Erro ao buscar dados do dashboard");
       const rawData = await response.json();
 
+      const selectedTurmaNome =
+        selectedTurma === "all"
+          ? null
+          : turmas.find((t) => String(t.id) === selectedTurma)?.nome || null;
+
       // Filtra os dados pelo filtro selecionado de turma e tipo
       const filteredRaw = rawData.filter((item: any) => {
-        if (selectedTurma !== "all" && item.turma !== selectedTurma) return false;
+        if (selectedTurmaNome && item.turma !== selectedTurmaNome) return false;
         if (selectedTipo !== "all" && item.tipo !== selectedTipo) return false;
         return true;
       });
@@ -485,9 +502,7 @@ export function DashboardForm() {
 
             {/* Select para filtro de Turma */}
             <Select
-              onValueChange={(value) =>
-                setSelectedTurma(value === "all" ? "all" : value)
-              }
+              onValueChange={(value) => setSelectedTurma(value)}
               value={selectedTurma}
             >
               <SelectTrigger className="w-[160px] bg-[#F5F5F5] text-black hover:bg-[#F5F5F5] cursor-pointer">
@@ -495,23 +510,18 @@ export function DashboardForm() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas as turmas</SelectItem>
-                {turmas.length > 0 ? (
-                  turmas.map((turma) => (
-                    <SelectItem key={turma} value={turma}>
-                      {turma}
-                    </SelectItem>
-                  ))
-                ) : (
+                {turmas.map((turma) => (
+                  <SelectItem key={turma.id} value={String(turma.id)}>
+                    {turma.nome}
+                  </SelectItem>
+                ))}
                   <SelectItem value="none">Nenhuma turma disponível</SelectItem>
-                )}
               </SelectContent>
             </Select>
 
             {/* Select para filtro de Tipo */}
             <Select
-              onValueChange={(value) =>
-                setSelectedTipo(value === "all" ? "all" : value)
-              }
+              onValueChange={(value) => setSelectedTipo(value)}
               value={selectedTipo}
             >
               <SelectTrigger className="w-[160px] bg-[#F5F5F5] text-black hover:bg-[#F5F5F5] cursor-pointer">
@@ -588,7 +598,7 @@ export function DashboardForm() {
               </div>
             )}
           </div>
-          <div className="mt-4 flex justify-center">
+          <div className="m-4 flex justify-center">
               <Button onClick={exportDataToTxt} className="bg-[#394779] text-white hover:bg-[#3d4381] cursor-pointer">
                 Exportar dados (.txt)
               </Button>

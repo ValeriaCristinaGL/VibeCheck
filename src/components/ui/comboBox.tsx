@@ -44,6 +44,11 @@ export function ComboboxDemo({
   const selectedLabel =
     items.find((f) => f.value === value)?.label || value
 
+  // Filtra itens que possuem label string e que contenham o texto do input (case insensitive)
+  const filteredItems = items.filter(
+    (t) => t && typeof t.label === "string" && t.label.toLowerCase().includes(inputValue.toLowerCase())
+  )
+
   return (
     // Popover controla o menu suspenso, abrindo ou fechando conforme estado open
     <Popover open={open} onOpenChange={setOpen}>
@@ -81,7 +86,7 @@ export function ComboboxDemo({
 
           <CommandList>
             {/* Caso não encontre nenhum item, mostra botão para criar nova opção */}
-            {items.filter(t => t.label.toLowerCase().includes(inputValue.toLowerCase())).length === 0 && inputValue && (
+            {filteredItems.length === 0 && inputValue && (
               <div className="p-2">
                 <Button
                   variant="ghost"
@@ -95,26 +100,22 @@ export function ComboboxDemo({
 
             {/* Grupo com as opções filtradas conforme o texto digitado */}
             <CommandGroup>
-              {items
-                .filter((framework) =>
-                  framework.label.toLowerCase().includes(inputValue.toLowerCase())
-                )
-                .map((framework) => (
-                  <CommandItem
-                    key={framework.value}
-                    value={framework.value}
-                    onSelect={() => handleSelect(framework.value)} // Seleciona a opção
-                  >
-                    {framework.label}
-                    {/* Ícone check aparece se o item for o selecionado */}
-                    <Check
-                      className={cn(
-                        "ml-auto h-4 w-4",
-                        value === framework.value ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                  </CommandItem>
-                ))}
+              {filteredItems.map((framework) => (
+                <CommandItem
+                  key={framework.value}
+                  value={framework.value}
+                  onSelect={() => handleSelect(framework.value)} // Seleciona a opção
+                >
+                  {framework.label}
+                  {/* Ícone check aparece se o item for o selecionado */}
+                  <Check
+                    className={cn(
+                      "ml-auto h-4 w-4",
+                      value === framework.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                </CommandItem>
+              ))}
             </CommandGroup>
           </CommandList>
 
