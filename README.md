@@ -27,13 +27,11 @@ Sistema web para monitoramento emocional de alunos durante práticas de bem-esta
 
 ---
 
-## 📖 Documentação e Wiki
+## 📖 Documentação
 
 Acesse os documentos detalhados sobre a arquitetura, decisões técnicas e guias do projeto:
 
 * 📐 [**Documentação de Arquitetura (Modelo Arc42)**](docs/arquitetura-arc42.md) — Visão detalhada de escopo, blocos de construção, infraestrutura e cenários de qualidade.
-* 📦 [**Guia de Configuração e Execução (Docker)**](README.md#-como-executar-o-projeto-localmente) — Instruções rápidas para subir o projeto localmente em segundos.
-
 ---
 
 ## 🚀 Como Executar o Projeto Localmente
