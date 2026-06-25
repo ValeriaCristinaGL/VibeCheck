@@ -1,0 +1,62 @@
+# ============================================
+# Docker Compose — Produção (imagens GHCR)
+# ============================================
+# Uso: GITHUB_REPOSITORY_OWNER=<org> docker compose -f docker-compose.prod.yml up -d
+# ============================================
+
+services:
+  # ------------------------------------------
+  # PostgreSQL
+  # ------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: vibecheck-postgres-prod
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-vibecheck}
+      POSTGRES_USER: ${POSTGRES_USER:-vibecheck_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vibecheck_user} -d ${POSTGRES_DB:-vibecheck}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ------------------------------------------
+  # Backend — Imagem GHCR
+  # ------------------------------------------
+  backend:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:?Defina GITHUB_REPOSITORY_OWNER}/vibecheck-backend:${TAG:-latest}
+    container_name: vibecheck-backend-prod
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-vibecheck};Username=${POSTGRES_USER:-vibecheck_user};Password=${POSTGRES_PASSWORD}"
+      DatabaseProvider: Postgres
+      Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:-}
+      Authentication__Google__ClientSecret: ${GOOGLE_CLIENT_SECRET:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ------------------------------------------
+  # Frontend — Imagem GHCR
+  # ------------------------------------------
+  frontend:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER:?Defina GITHUB_REPOSITORY_OWNER}/vibecheck-frontend:${TAG:-latest}
+    container_name: vibecheck-frontend-prod
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data_prod:

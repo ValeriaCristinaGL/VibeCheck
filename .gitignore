@@ -1,0 +1,23 @@
+# ============================================
+# .gitignore — VibeCheck (Raiz)
+# ============================================
+
+# Env files (nunca commitar secrets)
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker volumes
+postgres_data_dev/
+postgres_data_prod/

@@ -1,0 +1,244 @@
+name: Frontend CI/CD Workflow
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+    paths:
+      - "front/**"
+      - ".github/workflows/**"
+
+  workflow_dispatch:
+    inputs:
+      change_type:
+        description: 'Tipo de mudanca (novo-marco, nova-feature, bug-fix, outros)'
+        required: true
+        default: 'nova-feature'
+        type: choice
+        options:
+          - novo-marco
+          - nova-feature
+          - bug-fix
+          - outros
+
+jobs:
+  # --------------------------------------------------------------------
+  # 0) TAG CREATION ----------------------------------------------------
+  # --------------------------------------------------------------------
+  tag-creation:
+    name: 0. Automatic Creation Process of New Tags
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    outputs:
+      created_tag: ${{ steps.created_tag.outputs.created_tag }}
+      change_type: ${{ steps.change_type.outputs.change_type }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install GitHub CLI
+        run: sudo apt-get install -y gh
+
+      - name: Write PR body and log context
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          echo "Event: ${{ github.event_name }}"
+          echo "PR merged: ${{ github.event.pull_request.merged }}"
+          printf '%s' "$PR_BODY" > body.txt
+          echo "--- PR body ---"
+          cat body.txt
+          echo "--- end ---"
+
+      - name: Extract type of change from PR
+        id: change_type
+        if: github.event.pull_request.merged == true
+        run: |
+          change_type=""
+          if grep -qiE "\[x\]\s*\`?novo-marco\`?" body.txt; then
+            change_type="novo-marco"
+          elif grep -qiE "\[x\]\s*\`?nova-feature\`?" body.txt; then
+            change_type="nova-feature"
+          elif grep -qiE "\[x\]\s*\`?bug-fix\`?" body.txt; then
+            change_type="bug-fix"
+          elif grep -qiE "\[x\]\s*\`?outros\`?" body.txt; then
+            change_type="outros"
+          else
+            echo "Nenhuma opção marcada corretamente no corpo do PR. Conteúdo:"
+            cat body.txt
+            exit 1
+          fi
+          echo "Tipo detectado: $change_type"
+          echo "change_type=$change_type" >> "$GITHUB_OUTPUT"
+
+      - name: Get the last release tag
+        id: last_tag
+        run: |
+          gh auth setup-git
+          tag=$(gh release list --limit 1 --json tagName --jq '.[0].tagName')
+          if [[ -z "$tag" ]]; then tag="0.0.0"; fi
+          echo "last_tag=$tag" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Calculate new tag
+        id: created_tag
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            change_type="${{ github.event.inputs.change_type }}"
+          else
+            change_type="${{ steps.change_type.outputs.change_type }}"
+          fi
+          IFS='.' read -r major minor patch <<< "${{ steps.last_tag.outputs.last_tag }}"
+          case "$change_type" in
+            bug-fix|outros)
+              patch=$((patch + 1))
+              ;;
+            nova-feature)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            novo-marco)
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+          esac
+          created_tag="${major}.${minor}.${patch}"
+          echo "Nova tag: $created_tag"
+          echo "created_tag=$created_tag" >> "$GITHUB_OUTPUT"
+
+  # --------------------------------------------------------------------
+  # 1) FRONTEND DOCKER (Multi-Arch: AMD64 + ARM64) --------------------
+  # --------------------------------------------------------------------
+  frontend-docker:
+    name: 1. Frontend CI/CD (Multi-Arch)
+    runs-on: ubuntu-latest
+    needs: tag-creation
+    env:
+      CREATED_TAG: ${{ needs.tag-creation.outputs.created_tag }}
+      CHANGE_TYPE: ${{ needs.tag-creation.outputs.change_type }}
+      REGISTRY: ghcr.io
+      IMAGE_NAME: vibecheck-frontend
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    defaults:
+      run:
+        working-directory: front
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      # --- Multi-Arch Setup ---
+      - name: Set up QEMU (emulação ARM)
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # --- Build & Push Multi-Platform ---
+      - name: Build and Push Docker image (Multi-Arch)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./front
+          file: ./front/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.CREATED_TAG }}
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
+            VITE_API_TIMEOUT=10000
+          labels: |
+            org.opencontainers.image.title=VibeCheck Frontend
+            org.opencontainers.image.version=${{ env.CREATED_TAG }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.licenses=Apache-2.0
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # --- Security Scan ---
+      - name: Trivy Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.CREATED_TAG }}
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+          severity: CRITICAL
+
+  # --------------------------------------------------------------------
+  # 2) RELEASE CREATION ------------------------------------------------
+  # --------------------------------------------------------------------
+  release-creation:
+    name: 2. Automatic Creation Process of New Releases
+    runs-on: ubuntu-latest
+    needs: [tag-creation, frontend-docker]
+    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    env:
+      CREATED_TAG: ${{ needs.tag-creation.outputs.created_tag }}
+      CHANGE_TYPE: ${{ needs.tag-creation.outputs.change_type }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Release Publication
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.CREATED_TAG }}
+          name: Release Frontend ${{ env.CREATED_TAG }}
+          generate_release_notes: true
+          body: |
+            ## Frontend Release ${{ env.CREATED_TAG }}
+
+            Release gerada automaticamente.
+
+            **Tipo de mudança:** `${{ env.CHANGE_TYPE || github.event.inputs.change_type }}`
+
+            ### Imagens Docker (Multi-Arch: AMD64 + ARM64)
+            ```
+            ghcr.io/${{ github.repository_owner }}/vibecheck-frontend:${{ env.CREATED_TAG }}
+            ghcr.io/${{ github.repository_owner }}/vibecheck-frontend:latest
+            ```
+
+            **Plataformas:** `linux/amd64`, `linux/arm64`
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

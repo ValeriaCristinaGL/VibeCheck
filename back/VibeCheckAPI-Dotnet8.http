@@ -1,0 +1,6 @@
+@VibeCheckAPI_Dotnet8_HostAddress = http://localhost:5008
+
+GET {{VibeCheckAPI_Dotnet8_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
