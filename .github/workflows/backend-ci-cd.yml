@@ -135,6 +135,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Lowercase Repository Owner
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >> ${GITHUB_ENV}
+        env:
+          OWNER: ${{ github.repository_owner }}
+
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
@@ -175,8 +181,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.CREATED_TAG }}
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:${{ env.CREATED_TAG }}
+            ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:latest
           labels: |
             org.opencontainers.image.title=VibeCheck Backend API
             org.opencontainers.image.version=${{ env.CREATED_TAG }}
@@ -190,7 +196,7 @@ jobs:
       - name: Trivy Scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.CREATED_TAG }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:${{ env.CREATED_TAG }}
           format: table
           exit-code: 1
           ignore-unfixed: true
@@ -213,6 +219,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Lowercase Repository Owner
+        run: |
+          echo "OWNER_LC=${OWNER,,}" >> ${GITHUB_ENV}
+        env:
+          OWNER: ${{ github.repository_owner }}
+
       - name: Release Publication
         uses: softprops/action-gh-release@v2
         with:
@@ -228,8 +240,8 @@ jobs:
 
             ### Imagens Docker (Multi-Arch: AMD64 + ARM64)
             ```
-            ghcr.io/${{ github.repository_owner }}/vibecheck-backend:${{ env.CREATED_TAG }}
-            ghcr.io/${{ github.repository_owner }}/vibecheck-backend:latest
+            ghcr.io/${{ env.OWNER_LC }}/vibecheck-backend:${{ env.CREATED_TAG }}
+            ghcr.io/${{ env.OWNER_LC }}/vibecheck-backend:latest
             ```
 
             **Plataformas:** `linux/amd64`, `linux/arm64`
