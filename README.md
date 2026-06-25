@@ -1,59 +1,44 @@
 # VibeCheck 🎯
 
-O **VibeCheck** é uma aplicação voltada para o acompanhamento e registro de estados emocionais de alunos e turmas. Desenvolvido com uma arquitetura moderna e escalável, o projeto permite que professores analisem o engajamento emocional de suas turmas através de dashboards e relatórios detalhados.
+[![Backend CI/CD Workflow](https://github.com/ValeriaCristinaGL/VibeCheck/actions/workflows/backend-ci-cd.yml/badge.svg)](https://github.com/ValeriaCristinaGL/VibeCheck/actions/workflows/backend-ci-cd.yml)
+[![Frontend CI/CD Workflow](https://github.com/ValeriaCristinaGL/VibeCheck/actions/workflows/frontend-ci-cd.yml/badge.svg)](https://github.com/ValeriaCristinaGL/VibeCheck/actions/workflows/frontend-ci-cd.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
+[![C#](https://img.shields.io/badge/language-C%23-blue.svg)](#)
+[![React](https://img.shields.io/badge/language-React-cyan.svg)](#)
+[![Docker](https://img.shields.io/badge/docker-compatible-blue.svg)](#)
+
+Sistema web para monitoramento emocional de alunos durante práticas de bem-estar. O objetivo é registrar, armazenar e apresentar dados emocionais de forma anônima, simples e visual, utilizando emojis como meio principal de interação.
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-### Backend
-* **Linguagem/Framework:** .NET 8 (C#) / ASP.NET Core Web API
-* **Banco de Dados:** PostgreSQL (padrão) com suporte a SQL Server
-* **ORM:** Entity Framework Core
-* **Autenticação:** Google OAuth2
+* **Front-end:** React, Vite, TypeScript, TailwindCSS v4
+* **Back-end:** .NET 8 (ASP.NET Core Web API)
+* **Banco de Dados:** PostgreSQL (padrão) com suporte a SQL Server via Database Adapter
 
-### Frontend
-* **Linguagem/Framework:** React + TypeScript
-* **Ferramenta de Build:** Vite
-* **Estilização:** TailwindCSS v4
-* **Servidor de Produção:** Nginx (dentro do container Docker)
+<div align="left">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/.NET_8-512BD4?style=for-the-badge&logo=.net&logoColor=white" alt=".NET 8" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <img src="https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white" alt="Nginx" />
+</div>
 
 ---
 
-## 📁 Estrutura do Projeto
+## 📖 Documentação e Wiki
 
-```
-VibeCheck/
-├── .github/
-│   └── workflows/
-│       ├── backend-ci-cd.yml   # Workflow do backend
-│       └── frontend-ci-cd.yml  # Workflow do frontend
-├── back/                       # Código-fonte do Backend (.NET 8)
-│   ├── Controllers/
-│   ├── Services/
-│   ├── Data/
-│   ├── Dockerfile
-│   └── ...
-├── front/                      # Código-fonte do Frontend (React + Vite)
-│   ├── src/
-│   ├── Dockerfile
-│   ├── nginx.conf
-│   └── ...
-├── docker-compose.dev.yml      # Configuração para Desenvolvimento
-├── docker-compose.prod.yml     # Configuração para Produção (Imagens GHCR)
-├── .env-example                # Exemplo de variáveis de ambiente
-├── .gitignore                  # Arquivos ignorados pelo Git
-└── LICENSE                     # Licença Apache 2.0
-```
+Acesse os documentos detalhados sobre a arquitetura, decisões técnicas e guias do projeto:
+
+* 📐 [**Documentação de Arquitetura (Modelo Arc42)**](docs/arquitetura-arc42.md) — Visão detalhada de escopo, blocos de construção, infraestrutura e cenários de qualidade.
+* 📦 [**Guia de Configuração e Execução (Docker)**](README.md#-como-executar-o-projeto-localmente) — Instruções rápidas para subir o projeto localmente em segundos.
 
 ---
 
 ## 🚀 Como Executar o Projeto Localmente
 
-### Pré-requisitos
-* **Docker** e **Docker Compose** instalados na sua máquina.
-
-### Passo 1: Configurar Variáveis de Ambiente
+### Passo 1: Configurar as Variáveis de Ambiente
 Copie o arquivo `.env-example` da raiz para `.env` e preencha as variáveis de ambiente necessárias:
 ```bash
 cp .env-example .env
@@ -64,44 +49,20 @@ O ambiente de desenvolvimento realiza o build local do frontend e do backend, e 
 ```bash
 docker compose -f docker-compose.dev.yml up --build
 ```
-* **Frontend:** Acessível em [http://localhost:3000](http://localhost:3000)
-* **Backend:** Acessível em [http://localhost:8080](http://localhost:8080)
-* **Swagger (Documentação da API):** Acessível em [http://localhost:8080/swagger](http://localhost:8080/swagger)
+* **Frontend:** [http://localhost:3000](http://localhost:3000)
+* **Backend:** [http://localhost:8080](http://localhost:8080)
+* **Swagger (Documentação da API):** [http://localhost:8080/swagger](http://localhost:8080/swagger)
 
 ---
 
-## 🌐 Deploy em Produção (GHCR)
+## 🛡️ Segurança e Qualidade de Código
 
-Para subir o ambiente de produção consumindo as imagens prontas e otimizadas do GitHub Container Registry (GHCR):
-
-```bash
-# Defina o owner do repositório e a senha do banco antes de rodar
-export GITHUB_REPOSITORY_OWNER=ValeriaCristinaGL
-export POSTGRES_PASSWORD=sua_senha_segura
-export TAG=latest
-
-docker compose -f docker-compose.prod.yml up -d
-```
+* **Prevenção contra SQL Injection:** Consultas parametrizadas via Entity Framework Core em 100% dos acessos a dados.
+* **Escaneamento de Vulnerabilidades:** Imagens Docker inspecionadas automaticamente pelo Trivy Scan durante a execução dos pipelines de CI/CD.
+* **Segurança na API:** Filtro CORS restritivo e autenticação delegada de forma segura via Google OAuth 2.0.
 
 ---
 
-## 🔄 Pipeline de CI/CD (GitHub Actions)
+## 📜 Licenciamento
 
-Os workflows do GitHub Actions estão configurados na pasta `.github/workflows/`. Eles são disparados automaticamente ao realizar o merge de um Pull Request para a branch `main`, ou manualmente via `workflow_dispatch`.
-
-### Etapas do Pipeline:
-1. **Versionamento Semântico Automatizado (Tags):** Calcula automaticamente a nova versão (`major.minor.patch`) com base nos campos marcados no corpo do Pull Request:
-   - `[x] novo-marco` (Major)
-   - `[x] nova-feature` (Minor)
-   - `[x] bug-fix` / `[x] outros` (Patch)
-2. **Setup e Builds Multi-Arquitetura (Multi-Arch):**
-   - Configura emulação **QEMU** e **Docker Buildx** para compilar imagens simultaneamente para as arquiteturas **AMD64** (servidores comuns) e **ARM64** (servidores ARM, VMs gratuitas na Oracle Cloud, etc).
-3. **Escaneamento de Segurança (Trivy Scan):** Analisa a imagem gerada em busca de vulnerabilidades críticas.
-4. **Publicação no GHCR:** Envia a imagem com a tag da versão e a tag `latest` para o GitHub Container Registry do repositório.
-5. **Criação de Release:** Cria uma release oficial no repositório GitHub contendo as notas da versão e o changelog gerado.
-
----
-
-## 📜 Licença
-
-Este projeto é distribuído sob a licença **Apache License 2.0**. Consulte o arquivo [LICENSE](file:///c:/Users/20232ewbj0203/Desktop/VibeCheck/LICENSE) para mais detalhes.
+Este projeto é licenciado sob a **Apache License 2.0**. Consulte o arquivo [LICENSE](LICENSE) para obter o texto completo da licença.
