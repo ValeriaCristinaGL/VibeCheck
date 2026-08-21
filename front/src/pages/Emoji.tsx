@@ -1,4 +1,5 @@
 import { Button } from "@/components/button";
+import { buildApiUrl } from "@/api/config";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import Cookies from "js-cookie";
@@ -25,7 +26,7 @@ export default function EmojiPage() {
     const syncTipo = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/avaliacao/verificar-codigo?codigo=${codigo}`,
+          buildApiUrl(`/avaliacao/verificar-codigo?codigo=${codigo}`),
           {
             method: "GET",
             credentials: "include",
@@ -82,7 +83,7 @@ export default function EmojiPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/RegistroEmocional/registrar?codigo=${codigo}&valorEmocao=${parseInt(selected)}`,
+        buildApiUrl(`/RegistroEmocional/registrar?codigo=${codigo}&valorEmocao=${parseInt(selected)}`),
         {
           method: "POST",
           credentials: "include",
@@ -106,7 +107,7 @@ export default function EmojiPage() {
   // Função para encerrar a sessão (logout)
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/auth/logout", {
+      const response = await fetch(buildApiUrl("/auth/logout"), {
         method: "POST",
         credentials: "include",
       });

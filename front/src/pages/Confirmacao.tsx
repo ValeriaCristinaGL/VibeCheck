@@ -1,4 +1,5 @@
 import { Button } from "@/components/button";
+import { buildApiUrl } from "@/api/config";
 import { useNavigate } from "react-router-dom";
 import { CircleCheckBig, CircleUserRound } from "lucide-react";
 
@@ -8,7 +9,7 @@ export default function ConfirmacaoPage() {
   // Função para encerrar a sessão (logout)
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/auth/logout", {
+      const response = await fetch(buildApiUrl("/auth/logout"), {
         method: "POST",
         credentials: "include", // inclui cookies na requisição
       });

@@ -38,6 +38,9 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      FRONTEND_URL: ${FRONTEND_URL:-https://vibecheck.valerialima.me}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://vibecheck.valerialima.me}
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-vibecheck};Username=${POSTGRES_USER:-vibecheck_user};Password=${POSTGRES_PASSWORD}"
       DatabaseProvider: Postgres
       Authentication__Google__ClientId: ${GOOGLE_CLIENT_ID:-}

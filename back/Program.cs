@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.HttpOverrides;
 using VibeCheckAPI_Dotnet8.Data.Context;
 using System.Security.Claims;
 using VibeCheckAPI_Dotnet8.Services;
@@ -10,12 +11,48 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 
+var allowedOrigins = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+void AddAllowedOrigin(string? origin)
+{
+    if (string.IsNullOrWhiteSpace(origin))
+        return;
+
+    var normalized = origin.Trim().TrimEnd('/');
+    if (Uri.TryCreate(normalized, UriKind.Absolute, out var parsed))
+    {
+        allowedOrigins.Add($"{parsed.Scheme}://{parsed.Authority}");
+    }
+}
+
+AddAllowedOrigin(builder.Configuration["FRONTEND_URL"]);
+
+var configuredOrigins = builder.Configuration["CORS_ALLOWED_ORIGINS"];
+if (!string.IsNullOrWhiteSpace(configuredOrigins))
+{
+    foreach (var origin in configuredOrigins.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+    {
+        AddAllowedOrigin(origin);
+    }
+}
+
+if (builder.Environment.IsDevelopment())
+{
+    AddAllowedOrigin("http://localhost:3000");
+    AddAllowedOrigin("http://localhost:8080");
+}
+
+if (allowedOrigins.Count == 0)
+{
+    AddAllowedOrigin("http://localhost:3000");
+}
+
 // Configuração de CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:8080")
+        policy.WithOrigins(allowedOrigins.ToArray())
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -58,7 +95,13 @@ builder.Services.AddAuthentication(options =>
     options.DefaultScheme = "Cookies";
     options.DefaultChallengeScheme = "Google";
 })
-.AddCookie("Cookies")
+.AddCookie("Cookies", options =>
+{
+    options.Cookie.Name = "VibeCheck.Auth";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSite.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+})
 .AddGoogle("Google", options =>
 {
     options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "";
@@ -98,8 +141,20 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -107,6 +162,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 app.UseCors();
 app.UseAuthentication();

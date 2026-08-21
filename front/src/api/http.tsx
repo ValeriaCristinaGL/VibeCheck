@@ -1,8 +1,9 @@
 import axios from "axios";
+import { API_BASE_URL, API_TIMEOUT } from "./config";
 
 export const http = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: Number(import.meta.env.VITE_API_TIMEOUT),
+  baseURL: API_BASE_URL,
+  timeout: API_TIMEOUT,
 });
 
 // Interceptor de request: anexa token, se existir
