@@ -99,7 +99,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.Cookie.Name = "VibeCheck.Auth";
     options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSite.Lax;
+    options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 })
 .AddGoogle("Google", options =>
