@@ -1,4 +1,5 @@
 import { Button } from "@/components/button";
+import { buildApiUrl } from "@/api/config";
 import { useNavigate } from "react-router-dom";
 import { useRef, useState } from "react";
 import Cookies from "js-cookie";
@@ -70,7 +71,7 @@ export default function AlunoCheckInPage() {
   // Função para encerrar a sessão (logout)
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/auth/logout", {
+      const response = await fetch(buildApiUrl("/auth/logout"), {
         method: "POST",
         credentials: "include", // inclui cookies na requisição
       });
@@ -107,7 +108,7 @@ export default function AlunoCheckInPage() {
 
     // Requisição para verificar se o código é válido
     try {
-      const response = await fetch(`http://localhost:8080/api/avaliacao/verificar-codigo?codigo=${codigo}`, {
+      const response = await fetch(buildApiUrl(`/avaliacao/verificar-codigo?codigo=${codigo}`), {
         method: "GET",
         credentials: "include",
       });

@@ -14,6 +14,20 @@ namespace VibeCheckAPI_Dotnet8.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
+        private readonly IConfiguration _configuration;
+
+        public AuthController(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
+
+        private string BuildFrontendRedirect(string path)
+        {
+            var frontendUrl = (_configuration["FRONTEND_URL"] ?? "http://localhost:3000").Trim().TrimEnd('/');
+            var normalizedPath = path.StartsWith("/") ? path : $"/{path}";
+            return $"{frontendUrl}{normalizedPath}";
+        }
+
         [HttpGet("login")]
         public IActionResult TriggerGoogleLogin()
         {
@@ -32,15 +46,15 @@ namespace VibeCheckAPI_Dotnet8.Controllers
             // Verificar roles e redirecionar apropriadamente
             if (user.IsInRole("ROLE_PROFESSOR"))
             {
-                return Redirect("http://localhost:3000/dashboard");
+                return Redirect(BuildFrontendRedirect("/dashboard"));
             }
             else if (user.IsInRole("ROLE_ALUNO"))
             {
-                return Redirect("http://localhost:3000/check");
+                return Redirect(BuildFrontendRedirect("/check"));
             }
 
             // Fallback para usuários sem role específico
-            return Redirect("http://localhost:3000/");
+            return Redirect(BuildFrontendRedirect("/"));
         }
 
         [HttpPost("logout")]

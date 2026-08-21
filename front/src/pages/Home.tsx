@@ -1,4 +1,5 @@
 import { Button } from "@/components/button";
+import { buildApiUrl } from "@/api/config";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
@@ -7,7 +8,7 @@ export default function HomePage() {
 
   const handleLogin = () => {
     setLoading(true);
-    window.location.href = "http://localhost:8080/api/auth/login";
+    window.location.href = buildApiUrl("/auth/login");
   };
 
   return (

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/button";
+import { buildApiUrl } from "@/api/config";
 import { FileText, FileSpreadsheet, Calendar, ChevronDown, ChevronLeft, ChevronRight, Home, LogIn, LogOut } from "lucide-react";
 import { Loader } from "lucide-react";
 import toast from "react-hot-toast";
@@ -583,7 +584,7 @@ export default function DashBoardPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const resp = await fetch("http://localhost:8080/api/avaliacao/dashboard", {
+      const resp = await fetch(buildApiUrl("/avaliacao/dashboard"), {
         credentials: "include",
       });
       if (!resp.ok) throw new Error("Falha ao buscar dados do dashboard");
@@ -600,7 +601,7 @@ export default function DashBoardPage() {
 
   const fetchTurmas = async () => {
     try {
-      const resp = await fetch("http://localhost:8080/api/avaliacao/turmas", {
+      const resp = await fetch(buildApiUrl("/avaliacao/turmas"), {
         credentials: "include",
       });
       if (!resp.ok) throw new Error("Falha ao buscar turmas");
@@ -892,7 +893,7 @@ export default function DashBoardPage() {
   // ---------------- Logout ----------------
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/auth/logout", {
+      const response = await fetch(buildApiUrl("/auth/logout"), {
         method: "POST",
         credentials: "include",
       });

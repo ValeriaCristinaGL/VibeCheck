@@ -1,4 +1,5 @@
 import { Button } from "@/components/button";
+import { buildApiUrl } from "@/api/config";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { SuccessCard } from "@/components/successCard";
@@ -79,7 +80,7 @@ export default function CheckInPage() {
   const loadTurmas = useCallback(async () => {
     try {
       const response = await fetch(
-        "http://localhost:8080/api/avaliacao/turmas",
+        buildApiUrl("/avaliacao/turmas"),
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -116,7 +117,7 @@ export default function CheckInPage() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/auth/logout", {
+      const response = await fetch(buildApiUrl("/auth/logout"), {
         method: "POST",
         credentials: "include",
       });
@@ -165,7 +166,7 @@ export default function CheckInPage() {
     setIsLoading(true);
     try {
       const response = await fetch(
-        "http://localhost:8080/api/avaliacao/liberar-checkin",
+        buildApiUrl("/avaliacao/liberar-checkin"),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -265,7 +266,7 @@ export default function CheckInPage() {
 
     setIsSavingTurma(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/turma/${selectedTurmaId}`, {
+      const response = await fetch(buildApiUrl(`/turma/${selectedTurmaId}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -313,7 +314,7 @@ export default function CheckInPage() {
         setTurmas((prev) => prev.filter((item) => item.id !== turmaParaApagar.id));
       } else {
         const response = await fetch(
-          `http://localhost:8080/api/turma/${turmaParaApagar.id}`,
+          buildApiUrl(`/turma/${turmaParaApagar.id}`),
           {
             method: "DELETE",
             credentials: "include",
