@@ -12,8 +12,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
   Cell,
 } from "recharts";
 import {
@@ -21,16 +19,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/popover";
+import { EMOTIONS, getEmotionByValue } from "@/lib/emotions";
 import jsPDF from "jspdf";
-import * as XLSX from "xlsx";
 
 // ---------------- Types ----------------
-interface Emoji {
-  id: string;
-  label: string;
-  src: string;
-}
-
 interface Turma {
   id: number;
   nome: string;
@@ -60,9 +52,11 @@ interface WeeklyDataItem {
   "Check-out": number;
 }
 
-interface PieDataItem {
+interface EmotionDataItem {
+  id: string;
   name: string;
   value: number;
+  fill: string;
 }
 
 interface SummaryData {
@@ -78,37 +72,41 @@ interface Metrics {
   variacao?: number;
 }
 
-// ---------------- Cores do Pie Chart ----------------
-const PIE_COLORS = [
-  "#8B5CF6", // Roxo
-  "#3B82F6", // Azul
-  "#22C55E", // Verde
-  "#EAB308", // Amarelo
-  "#F97316", // Laranja
-  "#EF4444", // Vermelho
-  "#EC4899", // Rosa
-  "#14B8A6", // Teal
-  "#6366F1", // Indigo
+type RgbColor = [number, number, number];
+
+// ---------------- Cores do sistema ----------------
+const SYSTEM_COLORS = {
+  primaryHex: "#783E98",
+  primaryDarkHex: "#5e3178",
+  primarySoftHex: "#efe7f5",
+  borderHex: "#E5E7EB",
+  primary: [120, 62, 152] as RgbColor,
+  primaryDark: [94, 49, 120] as RgbColor,
+  primarySoft: [239, 231, 245] as RgbColor,
+  text: [31, 41, 55] as RgbColor,
+  muted: [107, 114, 128] as RgbColor,
+  border: [229, 231, 235] as RgbColor,
+  surface: [248, 248, 250] as RgbColor,
+  white: [255, 255, 255] as RgbColor,
+  success: [34, 197, 94] as RgbColor,
+  warning: [234, 179, 8] as RgbColor,
+  danger: [239, 68, 68] as RgbColor,
+};
+
+const CHART_COLORS = [
+  SYSTEM_COLORS.primaryHex,
+  "#3B82F6",
+  "#22C55E",
+  "#EAB308",
+  "#F97316",
+  "#EF4444",
+  "#EC4899",
+  "#14B8A6",
+  "#6366F1",
 ];
 
 // Dias da semana
 const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-
-// ---------------- Emojis ----------------
-const emojis: Emoji[] = [
-  { id: "1", label: "Muito Feliz", src: "/1.svg" },
-  { id: "2", label: "Feliz", src: "/2.svg" },
-  { id: "3", label: "Desmotivado", src: "/3.svg" },
-  { id: "4", label: "Indiferente", src: "/4.svg" },
-  { id: "5", label: "Surpreso", src: "/5.svg" },
-  { id: "6", label: "Triste", src: "/6.svg" },
-  { id: "7", label: "Irritado", src: "/7.svg" },
-  { id: "8", label: "Ansioso", src: "/8.svg" },
-  { id: "9", label: "Apaixonado", src: "/9.svg" },
-];
-
-const getEmojiById = (id: number | string): Emoji | undefined => 
-  emojis.find((e) => e.id === String(id));
 
 const DATE_LABEL_FORMATTER = new Intl.DateTimeFormat("pt-BR");
 const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat("pt-BR", {
@@ -201,6 +199,147 @@ const formatDateForInput = (date: Date): string => {
 };
 
 const formatDateLabel = (date: Date): string => DATE_LABEL_FORMATTER.format(date);
+
+type ExcelCellValue = string | number;
+
+interface ExcelWorksheetConfig {
+  name: string;
+  title: string;
+  metadata: Array<[string, string]>;
+  headers: string[];
+  rows: ExcelCellValue[][];
+  columnWidths: number[];
+}
+
+const escapeXml = (value: ExcelCellValue): string =>
+  String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+
+const sanitizeWorksheetName = (name: string): string =>
+  name.replace(/[\\/?*[\]:]/g, " ").trim().slice(0, 31) || "Planilha";
+
+const buildExcelCell = (
+  value: ExcelCellValue,
+  styleId: string,
+  mergeAcross?: number
+): string => {
+  const type = typeof value === "number" && Number.isFinite(value) ? "Number" : "String";
+  const mergeAttribute = mergeAcross && mergeAcross > 0 ? ` ss:MergeAcross="${mergeAcross}"` : "";
+
+  return `<Cell ss:StyleID="${styleId}"${mergeAttribute}><Data ss:Type="${type}">${escapeXml(value)}</Data></Cell>`;
+};
+
+const buildExcelWorksheet = (config: ExcelWorksheetConfig): string => {
+  const columnCount = config.headers.length;
+  const columns = config.columnWidths
+    .map((width) => `<Column ss:AutoFitWidth="0" ss:Width="${width}"/>`)
+    .join("");
+  const metadataRows = config.metadata
+    .map(([label, value]) => (
+      `<Row>${buildExcelCell(label, "MetaLabel")}${buildExcelCell(value, "MetaValue", columnCount - 2)}</Row>`
+    ))
+    .join("");
+  const headerRow = `<Row ss:Height="22">${config.headers
+    .map((header) => buildExcelCell(header, "Header"))
+    .join("")}</Row>`;
+  const dataRows = config.rows
+    .map((row, index) => {
+      const styleId = index % 2 === 0 ? "Data" : "DataAlt";
+      return `<Row>${row.map((cell) => buildExcelCell(cell, styleId)).join("")}</Row>`;
+    })
+    .join("");
+  const autoFilterEndRow = config.rows.length + config.metadata.length + 3;
+
+  return `
+    <Worksheet ss:Name="${escapeXml(sanitizeWorksheetName(config.name))}">
+      <Table>${columns}
+        <Row ss:Height="28">${buildExcelCell(config.title, "Title", columnCount - 1)}</Row>
+        ${metadataRows}
+        <Row/>
+        ${headerRow}
+        ${dataRows || `<Row>${buildExcelCell("Nenhum dado disponivel", "Data", columnCount - 1)}</Row>`}
+      </Table>
+      <AutoFilter x:Range="R${config.metadata.length + 3}C1:R${autoFilterEndRow}C${columnCount}" xmlns="urn:schemas-microsoft-com:office:excel"/>
+      <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+        <FreezePanes/>
+        <FrozenNoSplit/>
+        <SplitHorizontal>${config.metadata.length + 3}</SplitHorizontal>
+        <TopRowBottomPane>${config.metadata.length + 3}</TopRowBottomPane>
+        <ActivePane>2</ActivePane>
+      </WorksheetOptions>
+    </Worksheet>`;
+};
+
+const buildExcelWorkbook = (worksheets: ExcelWorksheetConfig[]): string => `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+  xmlns:x="urn:schemas-microsoft-com:office:excel"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:html="http://www.w3.org/TR/REC-html40">
+  <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
+    <Author>VibeCheck</Author>
+  </DocumentProperties>
+  <Styles>
+    <Style ss:ID="Default" ss:Name="Normal">
+      <Alignment ss:Vertical="Center"/>
+      <Font ss:FontName="Montserrat" ss:Size="10" ss:Color="#1F2937"/>
+    </Style>
+    <Style ss:ID="Title">
+      <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+      <Font ss:FontName="Montserrat" ss:Size="16" ss:Bold="1" ss:Color="#FFFFFF"/>
+      <Interior ss:Color="${SYSTEM_COLORS.primaryHex}" ss:Pattern="Solid"/>
+    </Style>
+    <Style ss:ID="MetaLabel">
+      <Font ss:FontName="Montserrat" ss:Size="10" ss:Bold="1" ss:Color="${SYSTEM_COLORS.primaryHex}"/>
+      <Interior ss:Color="${SYSTEM_COLORS.primarySoftHex}" ss:Pattern="Solid"/>
+    </Style>
+    <Style ss:ID="MetaValue">
+      <Font ss:FontName="Montserrat" ss:Size="10" ss:Color="#1F2937"/>
+      <Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/>
+    </Style>
+    <Style ss:ID="Header">
+      <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+      <Font ss:FontName="Montserrat" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/>
+      <Interior ss:Color="${SYSTEM_COLORS.primaryDarkHex}" ss:Pattern="Solid"/>
+      <Borders>
+        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="${SYSTEM_COLORS.borderHex}"/>
+      </Borders>
+    </Style>
+    <Style ss:ID="Data">
+      <Font ss:FontName="Montserrat" ss:Size="10" ss:Color="#1F2937"/>
+      <Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/>
+      <Borders>
+        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="${SYSTEM_COLORS.borderHex}"/>
+      </Borders>
+    </Style>
+    <Style ss:ID="DataAlt">
+      <Font ss:FontName="Montserrat" ss:Size="10" ss:Color="#1F2937"/>
+      <Interior ss:Color="#F8F8FA" ss:Pattern="Solid"/>
+      <Borders>
+        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="${SYSTEM_COLORS.borderHex}"/>
+      </Borders>
+    </Style>
+  </Styles>
+  ${worksheets.map(buildExcelWorksheet).join("")}
+</Workbook>`;
+
+const downloadTextFile = (filename: string, content: string, mimeType: string) => {
+  const blob = new Blob(["\uFEFF", content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
 
 const getFileDateStamp = () => formatDateForInput(new Date());
 
@@ -309,7 +448,7 @@ export default function DashBoardPage() {
 
   const [rawData, setRawData] = useState<RawDataItem[]>([]);
   const [weeklyData, setWeeklyData] = useState<WeeklyDataItem[]>([]);
-  const [pieData, setPieData] = useState<PieDataItem[]>([]);
+  const [emotionData, setEmotionData] = useState<EmotionDataItem[]>([]);
   const [summaryData, setSummaryData] = useState<SummaryData>({ melhor: 0, igual: 0, pior: 0 });
   const [metrics, setMetrics] = useState<Metrics>({});
 
@@ -376,16 +515,35 @@ export default function DashBoardPage() {
         : 0,
     }));
 
-    // Dados para o Pie Chart (distribuição das emoções)
+    // Dados para o gráfico de emoções
     const emotionCounts: Record<string, number> = {};
+    let otherEmotionCount = 0;
     apiData.forEach((item) => {
-      const emoji = getEmojiById(item.emocao);
-      const label = emoji?.label || "Outro";
-      emotionCounts[label] = (emotionCounts[label] || 0) + 1;
+      const emotion = getEmotionByValue(item.emocao);
+
+      if (!emotion) {
+        otherEmotionCount++;
+        return;
+      }
+
+      emotionCounts[emotion.id] = (emotionCounts[emotion.id] || 0) + 1;
     });
-    const pieChartData: PieDataItem[] = Object.entries(emotionCounts)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value);
+
+    const emotionChartData: EmotionDataItem[] = EMOTIONS.map((emotion, index) => ({
+      id: emotion.id,
+      name: emotion.label,
+      value: emotionCounts[emotion.id] || 0,
+      fill: CHART_COLORS[index % CHART_COLORS.length],
+    }));
+
+    if (otherEmotionCount > 0) {
+      emotionChartData.push({
+        id: "outro",
+        name: "Outro",
+        value: otherEmotionCount,
+        fill: SYSTEM_COLORS.primaryDarkHex,
+      });
+    }
 
     // Calcular resumo (melhor, igual, pior)
     let melhor = 0, igual = 0, pior = 0;
@@ -412,7 +570,7 @@ export default function DashBoardPage() {
 
     return {
       weeklyChartData,
-      pieChartData,
+      emotionChartData,
       summaryData: summaryResult,
       totalAvaliacoes: apiData.length,
       emocaoMediaAntes: a.avg,
@@ -498,7 +656,7 @@ export default function DashBoardPage() {
 
     const processed = processApiData(data);
     setWeeklyData(processed.weeklyChartData);
-    setPieData(processed.pieChartData);
+    setEmotionData(processed.emotionChartData);
     setSummaryData(processed.summaryData);
     setMetrics({
       totalAvaliacoes: processed.totalAvaliacoes,
@@ -519,56 +677,146 @@ export default function DashBoardPage() {
         format: "a4",
       });
 
-      let y = 16;
+      let y = 14;
+      const marginX = 14;
+      const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const lineHeight = 6;
+      const contentWidth = pageWidth - marginX * 2;
 
-      const ensureSpace = (neededLines = 1) => {
-        if (y + neededLines * lineHeight > pageHeight - 14) {
+      const applyText = (
+        size: number,
+        color: RgbColor = SYSTEM_COLORS.text,
+        style: "normal" | "bold" = "normal"
+      ) => {
+        pdf.setFont("helvetica", style);
+        pdf.setFontSize(size);
+        pdf.setTextColor(...color);
+      };
+
+      const drawFooter = () => {
+        applyText(8, SYSTEM_COLORS.muted);
+        pdf.text(`VibeCheck - ${formatDateLabel(new Date())}`, marginX, pageHeight - 8);
+      };
+
+      const ensureSpace = (neededHeight: number) => {
+        if (y + neededHeight > pageHeight - 18) {
+          drawFooter();
           pdf.addPage();
           y = 16;
         }
       };
 
-      const writeLine = (text: string, size = 11, color: [number, number, number] = [55, 65, 81]) => {
-        ensureSpace();
-        pdf.setFontSize(size);
-        pdf.setTextColor(color[0], color[1], color[2]);
-        pdf.text(text, 14, y);
-        y += lineHeight;
+      const drawHeader = () => {
+        pdf.setFillColor(...SYSTEM_COLORS.primary);
+        pdf.roundedRect(marginX, y, contentWidth, 28, 3, 3, "F");
+        applyText(18, SYSTEM_COLORS.white, "bold");
+        pdf.text("Dashboard VibeCheck", marginX + 6, y + 11);
+        applyText(10, SYSTEM_COLORS.primarySoft);
+        pdf.text(`Gerado em ${formatDateLabel(new Date())}`, marginX + 6, y + 20);
+        y += 38;
       };
 
       const writeSectionTitle = (title: string) => {
-        y += 2;
-        writeLine(title, 13, [120, 62, 152]);
+        ensureSpace(12);
+        applyText(13, SYSTEM_COLORS.primary, "bold");
+        pdf.text(title, marginX, y);
+        y += 7;
       };
 
-      writeLine("Dashboard VibeCheck", 18, [120, 62, 152]);
-      writeLine(`Gerado em: ${formatDateLabel(new Date())}`);
-      writeLine(`Período: ${formatDateRange()}`);
-      writeLine(`Tipo: ${tipoFiltro === "todos" ? "Todos" : tipoFiltro}`);
-      writeLine(`Turma: ${turmaFiltro === "todas" ? "Todas as turmas" : turmaFiltro}`);
+      const drawMetricCards = () => {
+        const cardGap = 4;
+        const cardWidth = (contentWidth - cardGap) / 2;
+        const cardHeight = 19;
+        const cards = [
+          { label: "Avaliações", value: String(metrics.totalAvaliacoes ?? 0), color: SYSTEM_COLORS.primary },
+          { label: "Média check-in", value: (metrics.emocaoMediaAntes ?? 0).toFixed(2), color: SYSTEM_COLORS.primary },
+          { label: "Média check-out", value: (metrics.emocaoMediaDepois ?? 0).toFixed(2), color: SYSTEM_COLORS.primary },
+          { label: "Variação", value: (metrics.variacao ?? 0).toFixed(2), color: SYSTEM_COLORS.primary },
+          { label: "Melhor", value: `${summaryData.melhor}%`, color: SYSTEM_COLORS.success },
+          { label: "Igual", value: `${summaryData.igual}%`, color: SYSTEM_COLORS.warning },
+          { label: "Pior", value: `${summaryData.pior}%`, color: SYSTEM_COLORS.danger },
+        ];
+
+        cards.forEach((card, index) => {
+          if (index % 2 === 0) ensureSpace(cardHeight + 4);
+          const column = index % 2;
+          const x = marginX + column * (cardWidth + cardGap);
+
+          pdf.setFillColor(...SYSTEM_COLORS.surface);
+          pdf.setDrawColor(...SYSTEM_COLORS.border);
+          pdf.roundedRect(x, y, cardWidth, cardHeight, 2, 2, "FD");
+          applyText(9, SYSTEM_COLORS.muted, "bold");
+          pdf.text(card.label, x + 4, y + 7);
+          applyText(15, card.color, "bold");
+          pdf.text(card.value, x + 4, y + 15);
+
+          if (column === 1 || index === cards.length - 1) y += cardHeight + 4;
+        });
+      };
+
+      const drawTable = (title: string, headers: string[], rows: string[][]) => {
+        const rowHeight = 8;
+        const columnWidth = contentWidth / headers.length;
+
+        writeSectionTitle(title);
+        ensureSpace(rowHeight * 2);
+
+        pdf.setFillColor(...SYSTEM_COLORS.primaryDark);
+        pdf.rect(marginX, y, contentWidth, rowHeight, "F");
+        applyText(9, SYSTEM_COLORS.white, "bold");
+        headers.forEach((header, index) => {
+          pdf.text(header, marginX + index * columnWidth + 3, y + 5.3);
+        });
+        y += rowHeight;
+
+        const tableRows = rows.length ? rows : [["Nenhum dado disponível"]];
+        tableRows.forEach((row, rowIndex) => {
+          ensureSpace(rowHeight);
+          if (rowIndex % 2 === 0) {
+            pdf.setFillColor(...SYSTEM_COLORS.surface);
+            pdf.rect(marginX, y, contentWidth, rowHeight, "F");
+          }
+
+          pdf.setDrawColor(...SYSTEM_COLORS.border);
+          pdf.line(marginX, y + rowHeight, marginX + contentWidth, y + rowHeight);
+          applyText(9, SYSTEM_COLORS.text);
+          row.forEach((cell, index) => {
+            const text = pdf.splitTextToSize(cell, columnWidth - 6)[0] || "";
+            pdf.text(text, marginX + index * columnWidth + 3, y + 5.3);
+          });
+          y += rowHeight;
+        });
+
+        y += 4;
+      };
+
+      drawHeader();
+      drawTable("Filtros aplicados", ["Filtro", "Valor"], [
+        ["Período", formatDateRange()],
+        ["Tipo", tipoFiltro === "todos" ? "Todos" : tipoFiltro],
+        ["Turma", turmaFiltro === "todas" ? "Todas as turmas" : turmaFiltro],
+      ]);
 
       writeSectionTitle("Resumo");
-      writeLine(`Total de avaliações: ${metrics.totalAvaliacoes ?? 0}`);
-      writeLine(`Média check-in: ${(metrics.emocaoMediaAntes ?? 0).toFixed(2)}`);
-      writeLine(`Média check-out: ${(metrics.emocaoMediaDepois ?? 0).toFixed(2)}`);
-      writeLine(`Variação: ${(metrics.variacao ?? 0).toFixed(2)}`);
-      writeLine(`Melhor: ${summaryData.melhor}% | Igual: ${summaryData.igual}% | Pior: ${summaryData.pior}%`);
+      drawMetricCards();
 
-      writeSectionTitle("Check-in x Check-out por dia");
-      weeklyData.forEach((item) => {
-        writeLine(`${item.name}: Check-in ${item["Check-in"]} | Check-out ${item["Check-out"]}`);
-      });
+      drawTable(
+        "Check-in x Check-out por dia",
+        ["Dia", "Check-in", "Check-out"],
+        weeklyData.map((item) => [
+          item.name,
+          String(item["Check-in"]),
+          String(item["Check-out"]),
+        ])
+      );
 
-      writeSectionTitle("Distribuição das emoções");
-      if (pieData.length === 0) {
-        writeLine("Nenhum dado disponível para o período selecionado.");
-      } else {
-        pieData.forEach((item) => {
-          writeLine(`${item.name}: ${item.value} registro(s)`);
-        });
-      }
+      drawTable(
+        "Distribuição das emoções",
+        ["Emoção", "Registros"],
+        emotionData.map((item) => [item.name, String(item.value)])
+      );
+
+      drawFooter();
 
       pdf.save(`dashboard-vibecheck-${getFileDateStamp()}.pdf`);
       
@@ -583,33 +831,56 @@ export default function DashBoardPage() {
     toast.loading("Gerando Excel...", { id: "excel-export" });
     
     try {
-      // Dados semanais
-      const weeklySheet = XLSX.utils.json_to_sheet(weeklyData.map(item => ({
-        "Dia da Semana": item.name,
-        "Check-in (Média)": item["Check-in"],
-        "Check-out (Média)": item["Check-out"],
-      })));
-
-      // Dados de emoções
-      const emotionsSheet = XLSX.utils.json_to_sheet(pieData.map(item => ({
-        "Emoção": item.name,
-        "Quantidade": item.value,
-      })));
-
-      // Resumo
-      const summarySheet = XLSX.utils.json_to_sheet([
-        { "Métrica": "Melhor", "Percentual": `${summaryData.melhor}%` },
-        { "Métrica": "Igual", "Percentual": `${summaryData.igual}%` },
-        { "Métrica": "Pior", "Percentual": `${summaryData.pior}%` },
-        { "Métrica": "Total de Avaliações", "Valor": metrics.totalAvaliacoes },
+      const metadata: Array<[string, string]> = [
+        ["Gerado em", formatDateLabel(new Date())],
+        ["Período", formatDateRange()],
+        ["Tipo", tipoFiltro === "todos" ? "Todos" : tipoFiltro],
+        ["Turma", turmaFiltro === "todas" ? "Todas as turmas" : turmaFiltro],
+      ];
+      const workbook = buildExcelWorkbook([
+        {
+          name: "Resumo",
+          title: "Resumo do Dashboard",
+          metadata,
+          headers: ["Métrica", "Valor"],
+          rows: [
+            ["Total de Avaliações", metrics.totalAvaliacoes ?? 0],
+            ["Média check-in", (metrics.emocaoMediaAntes ?? 0).toFixed(2)],
+            ["Média check-out", (metrics.emocaoMediaDepois ?? 0).toFixed(2)],
+            ["Variação", (metrics.variacao ?? 0).toFixed(2)],
+            ["Melhor", `${summaryData.melhor}%`],
+            ["Igual", `${summaryData.igual}%`],
+            ["Pior", `${summaryData.pior}%`],
+          ],
+          columnWidths: [180, 120],
+        },
+        {
+          name: "Dados Semanais",
+          title: "Check-in x Check-out por dia",
+          metadata,
+          headers: ["Dia da Semana", "Check-in (Média)", "Check-out (Média)"],
+          rows: weeklyData.map((item) => [
+            item.name,
+            item["Check-in"],
+            item["Check-out"],
+          ]),
+          columnWidths: [130, 130, 140],
+        },
+        {
+          name: "Distribuição Emoções",
+          title: "Distribuição das Emoções",
+          metadata,
+          headers: ["Emoção", "Quantidade"],
+          rows: emotionData.map((item) => [item.name, item.value]),
+          columnWidths: [180, 120],
+        },
       ]);
 
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, weeklySheet, "Dados Semanais");
-      XLSX.utils.book_append_sheet(workbook, emotionsSheet, "Distribuição Emoções");
-      XLSX.utils.book_append_sheet(workbook, summarySheet, "Resumo");
-
-      XLSX.writeFile(workbook, `dashboard-vibecheck-${getFileDateStamp()}.xlsx`);
+      downloadTextFile(
+        `dashboard-vibecheck-${getFileDateStamp()}.xls`,
+        workbook,
+        "application/vnd.ms-excel;charset=utf-8"
+      );
       
       toast.success("Excel exportado com sucesso!", { id: "excel-export" });
     } catch (error) {
@@ -696,6 +967,9 @@ export default function DashBoardPage() {
     setDataInicio("");
     setDataFim("");
   };
+
+  const hasEmotionData = emotionData.some((item) => item.value > 0);
+  const emotionChartWidth = Math.max(760, emotionData.length * 92);
 
   // ---------------- Render ----------------
   return (
@@ -1037,7 +1311,7 @@ export default function DashBoardPage() {
                           fontSize: '12px'
                         }}
                       />
-                      <Bar dataKey="Check-in" fill="#8B5CF6" radius={[4, 4, 0, 0]} barSize={16} />
+                      <Bar dataKey="Check-in" fill={SYSTEM_COLORS.primaryHex} radius={[4, 4, 0, 0]} barSize={16} />
                       <Bar dataKey="Check-out" fill="#3B82F6" radius={[4, 4, 0, 0]} barSize={16} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -1045,7 +1319,7 @@ export default function DashBoardPage() {
               </div>
               <div className="flex items-center justify-center gap-4 mt-3">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-sm bg-[#8B5CF6]"></div>
+                  <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: SYSTEM_COLORS.primaryHex }}></div>
                   <span className="text-xs text-gray-600">Check-in</span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -1055,47 +1329,72 @@ export default function DashBoardPage() {
               </div>
             </div>
 
-            {/* Gráfico de Pizza */}
+            {/* Gráfico de colunas por emoção */}
             <div className="bg-white border border-gray-200 rounded-xl p-4 md:p-6 shadow-sm">
               <h2 className="text-base md:text-lg font-semibold text-gray-800 mb-1">Distribuição das emoções dos estudantes</h2>
-              <p className="text-xs md:text-sm text-gray-500 mb-3">Pontuações emocionais médias ao longo da semana</p>
-              <div className="w-full h-[200px] md:h-[280px]">
+              <p className="text-xs md:text-sm text-gray-500 mb-3">Quantidade de registros por emoção no período selecionado</p>
+              <div className="w-full h-[300px] overflow-x-auto overflow-y-hidden pb-2 md:h-[320px]">
                 {loading ? (
                   <div className="w-full h-full flex items-center justify-center text-gray-500">
                     <Loader className="animate-spin w-5 h-5 mr-2" /> Carregando...
                   </div>
                 ) : error ? (
                   <div className="w-full h-full flex items-center justify-center text-red-500 text-sm">{error}</div>
+                ) : !hasEmotionData ? (
+                  <div className="w-full h-full flex items-center justify-center text-gray-500 text-sm">
+                    Nenhum registro emocional no período selecionado.
+                  </div>
                 ) : (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={70}
-                        innerRadius={0}
-                        dataKey="value"
-                        labelLine={true}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        fontSize={9}
-                      >
-                        {pieData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value: number, name: string) => [`${value} registros`, name]}
-                        contentStyle={{ 
-                          borderRadius: '8px', 
-                          border: '1px solid #E5E7EB',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                          fontSize: '12px'
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div className="h-full" style={{ width: emotionChartWidth }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={emotionData} margin={{ top: 10, right: 18, left: -8, bottom: 12 }} barCategoryGap="24%">
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F0ECF4" />
+                        <XAxis
+                          dataKey="name"
+                          interval={0}
+                          angle={-24}
+                          textAnchor="end"
+                          height={72}
+                          tickLine={false}
+                          axisLine={false}
+                          tick={{ fill: "#6B7280", fontSize: 10 }}
+                          tickMargin={12}
+                        />
+                        <YAxis
+                          allowDecimals={false}
+                          tickLine={false}
+                          axisLine={false}
+                          tick={{ fill: "#6B7280", fontSize: 10 }}
+                          width={32}
+                        />
+                        <Tooltip
+                          formatter={(value) => [`${value} registros`, "Registros"]}
+                          labelFormatter={(label) => `Emoção: ${label}`}
+                          contentStyle={{
+                            borderRadius: "8px",
+                            border: `1px solid ${SYSTEM_COLORS.borderHex}`,
+                            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                            fontSize: "12px",
+                          }}
+                        />
+                        <Bar dataKey="value" name="Registros" radius={[6, 6, 0, 0]} maxBarSize={42}>
+                          {emotionData.map((entry) => (
+                            <Cell key={`emotion-${entry.id}`} fill={entry.fill} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 )}
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {emotionData.map((item) => (
+                  <div key={item.id} className="flex min-w-0 items-center gap-2 rounded-md bg-gray-50 px-2 py-1.5">
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: item.fill }} />
+                    <span className="min-w-0 flex-1 truncate text-xs text-gray-600">{item.name}</span>
+                    <span className="text-xs font-semibold text-gray-800">{item.value}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

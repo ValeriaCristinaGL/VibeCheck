@@ -21,3 +21,7 @@ Thumbs.db
 # Docker volumes
 postgres_data_dev/
 postgres_data_prod/
+
+# Local portable tooling/runtime data
+.tools/
+.data/

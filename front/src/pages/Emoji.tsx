@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Cookies from "js-cookie";
 import { CircleUserRound } from "lucide-react";
 import toast from "react-hot-toast";
+import { EMOTIONS } from "@/lib/emotions";
 
 type AvaliacaoTipo = "checkin" | "checkout";
 
@@ -11,18 +12,6 @@ export default function EmojiPage() {
   const navigate = useNavigate();
   const [selected, setSelected] = useState<string | null>(null);
   const [tipoAvaliacao, setTipoAvaliacao] = useState<AvaliacaoTipo | null>(null);
-
-  const emojis = [
-    { id: "1", label: "Muito Feliz", src: "/1.svg" },
-    { id: "2", label: "Feliz", src: "/2.svg" },
-    { id: "3", label: "Desmotivado", src: "/3.svg" },
-    { id: "4", label: "Indiferente", src: "/4.svg" },
-    { id: "5", label: "Surpreso", src: "/5.svg" },
-    { id: "6", label: "Triste", src: "/6.svg" },
-    { id: "7", label: "Irritado", src: "/7.svg" },
-    { id: "8", label: "Ansioso", src: "/8.svg" },
-    { id: "9", label: "Apaixonado", src: "/9.svg" },
-  ];
 
   useEffect(() => {
     const tipoCookie = Cookies.get("tipo_avaliacao");
@@ -193,7 +182,7 @@ export default function EmojiPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-3 gap-3 md:gap-4">
-              {emojis.map((emoji) => {
+              {EMOTIONS.map((emoji) => {
                 const isSelected = selected === emoji.id;
                 return (
                   <button
