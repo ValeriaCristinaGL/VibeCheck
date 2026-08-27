@@ -165,16 +165,18 @@ jobs:
 
       # --- Multi-Arch Setup ---
       - name: Set up QEMU (emulação ARM)
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
         with:
           platforms: linux/arm64
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
+        with:
+          buildkitd-flags: --debug
 
       # --- Build & Push Multi-Platform ---
       - name: Build and Push Docker image (Multi-Arch)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./back
           file: ./back/Dockerfile
