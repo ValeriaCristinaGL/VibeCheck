@@ -20,7 +20,7 @@ export function useAuth() {
     const checkAuthStatus = async () => {
       try {
         // Faz a requisição para obter os detalhes do usuário, enviando cookies
-        const response = await http.get("/api/auth/user/details", {
+        const response = await http.get("/auth/user/details", {
           withCredentials: true,
         });
 
